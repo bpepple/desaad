@@ -10,149 +10,327 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Arc',
+            name="Arc",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('mid', models.PositiveIntegerField(unique=True, verbose_name='Metron ID')),
-                ('name', models.CharField(max_length=200)),
-                ('slug', models.SlugField(max_length=255, unique=True)),
-                ('desc', models.TextField(blank=True, verbose_name='Description')),
-                ('image', sorl.thumbnail.fields.ImageField(blank=True, upload_to='arc/%Y/%m/%d/')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "mid",
+                    models.PositiveIntegerField(unique=True, verbose_name="Metron ID"),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("slug", models.SlugField(max_length=255, unique=True)),
+                ("desc", models.TextField(blank=True, verbose_name="Description")),
+                (
+                    "image",
+                    sorl.thumbnail.fields.ImageField(
+                        blank=True, upload_to="arc/%Y/%m/%d/"
+                    ),
+                ),
+            ],
+            options={"ordering": ["name"]},
+        ),
+        migrations.CreateModel(
+            name="Creator",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "mid",
+                    models.PositiveIntegerField(unique=True, verbose_name="Metron ID"),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("slug", models.SlugField(max_length=255, unique=True)),
+                ("desc", models.TextField(blank=True, verbose_name="Description")),
+                (
+                    "wikipedia",
+                    models.CharField(
+                        blank=True, max_length=255, verbose_name="Wikipedia Slug"
+                    ),
+                ),
+                (
+                    "birth",
+                    models.DateField(
+                        blank=True, null=True, verbose_name="Date of Birth"
+                    ),
+                ),
+                (
+                    "death",
+                    models.DateField(
+                        blank=True, null=True, verbose_name="Date of Death"
+                    ),
+                ),
+                (
+                    "image",
+                    sorl.thumbnail.fields.ImageField(
+                        blank=True, upload_to="creator/%Y/%m/%d/"
+                    ),
+                ),
+                (
+                    "alias",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(max_length=100),
+                        blank=True,
+                        null=True,
+                        size=None,
+                    ),
+                ),
+            ],
+            options={"ordering": ["name"]},
+        ),
+        migrations.CreateModel(
+            name="Credits",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "creator",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="comics.Creator"
+                    ),
+                ),
+            ],
+            options={"verbose_name_plural": "Credits", "ordering": ["creator__name"]},
+        ),
+        migrations.CreateModel(
+            name="Publisher",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "mid",
+                    models.PositiveIntegerField(unique=True, verbose_name="Metron ID"),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("slug", models.SlugField(max_length=255, unique=True)),
+                (
+                    "founded",
+                    models.PositiveSmallIntegerField(
+                        blank=True, null=True, verbose_name="Year Founded"
+                    ),
+                ),
+                ("desc", models.TextField(blank=True, verbose_name="Description")),
+                (
+                    "wikipedia",
+                    models.CharField(
+                        blank=True, max_length=255, verbose_name="Wikipedia Slug"
+                    ),
+                ),
+                (
+                    "image",
+                    sorl.thumbnail.fields.ImageField(
+                        blank=True, upload_to="publisher/%Y/%m/%d/", verbose_name="Logo"
+                    ),
+                ),
+            ],
+            options={"ordering": ["name"]},
+        ),
+        migrations.CreateModel(
+            name="Role",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "mid",
+                    models.PositiveIntegerField(unique=True, verbose_name="Metron ID"),
+                ),
+                ("name", models.CharField(max_length=25)),
+                ("order", models.PositiveSmallIntegerField(unique=True)),
+                ("notes", models.TextField(blank=True)),
+            ],
+            options={"ordering": ["order"]},
+        ),
+        migrations.CreateModel(
+            name="SeriesType",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "mid",
+                    models.PositiveIntegerField(unique=True, verbose_name="Metron ID"),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("notes", models.TextField(blank=True)),
+                ("modified", models.DateTimeField(auto_now=True)),
+            ],
+            options={"ordering": ["name"]},
+        ),
+        migrations.CreateModel(
+            name="Series",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "mid",
+                    models.PositiveIntegerField(unique=True, verbose_name="Metron ID"),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("sort_name", models.CharField(max_length=255)),
+                ("slug", models.SlugField(max_length=255, unique=True)),
+                (
+                    "volume",
+                    models.PositiveSmallIntegerField(verbose_name="Volume Number"),
+                ),
+                (
+                    "year_began",
+                    models.PositiveSmallIntegerField(verbose_name="Year Began"),
+                ),
+                (
+                    "year_end",
+                    models.PositiveSmallIntegerField(
+                        blank=True, null=True, verbose_name="Year Ended"
+                    ),
+                ),
+                ("desc", models.TextField(blank=True, verbose_name="Description")),
+                (
+                    "publisher",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="comics.Publisher",
+                    ),
+                ),
+                (
+                    "series_type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="comics.SeriesType",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['name'],
+                "verbose_name_plural": "Series",
+                "ordering": ["sort_name", "year_began"],
+                "unique_together": {("publisher", "name", "volume")},
             },
         ),
         migrations.CreateModel(
-            name='Creator',
+            name="Issue",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('mid', models.PositiveIntegerField(unique=True, verbose_name='Metron ID')),
-                ('name', models.CharField(max_length=200)),
-                ('slug', models.SlugField(max_length=255, unique=True)),
-                ('desc', models.TextField(blank=True, verbose_name='Description')),
-                ('wikipedia', models.CharField(blank=True, max_length=255, verbose_name='Wikipedia Slug')),
-                ('birth', models.DateField(blank=True, null=True, verbose_name='Date of Birth')),
-                ('death', models.DateField(blank=True, null=True, verbose_name='Date of Death')),
-                ('image', sorl.thumbnail.fields.ImageField(blank=True, upload_to='creator/%Y/%m/%d/')),
-                ('alias', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=100), blank=True, null=True, size=None)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "mid",
+                    models.PositiveIntegerField(unique=True, verbose_name="Metron ID"),
+                ),
+                (
+                    "name",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(
+                            max_length=150, verbose_name="Story Title"
+                        ),
+                        blank=True,
+                        null=True,
+                        size=None,
+                    ),
+                ),
+                ("slug", models.SlugField(max_length=255, unique=True)),
+                ("number", models.CharField(max_length=25)),
+                ("cover_date", models.DateField(verbose_name="Cover Date")),
+                (
+                    "store_date",
+                    models.DateField(
+                        blank=True, null=True, verbose_name="In Store Date"
+                    ),
+                ),
+                ("desc", models.TextField(blank=True, verbose_name="Description")),
+                (
+                    "image",
+                    sorl.thumbnail.fields.ImageField(
+                        blank=True, upload_to="issue/%Y/%m/%d/", verbose_name="Cover"
+                    ),
+                ),
+                ("arcs", models.ManyToManyField(blank=True, to="comics.Arc")),
+                (
+                    "creators",
+                    models.ManyToManyField(
+                        blank=True, through="comics.Credits", to="comics.Creator"
+                    ),
+                ),
+                (
+                    "series",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="comics.Series"
+                    ),
+                ),
             ],
             options={
-                'ordering': ['name'],
-            },
-        ),
-        migrations.CreateModel(
-            name='Credits',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('creator', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='comics.Creator')),
-            ],
-            options={
-                'verbose_name_plural': 'Credits',
-                'ordering': ['creator__name'],
-            },
-        ),
-        migrations.CreateModel(
-            name='Publisher',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('mid', models.PositiveIntegerField(unique=True, verbose_name='Metron ID')),
-                ('name', models.CharField(max_length=255)),
-                ('slug', models.SlugField(max_length=255, unique=True)),
-                ('founded', models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='Year Founded')),
-                ('desc', models.TextField(blank=True, verbose_name='Description')),
-                ('wikipedia', models.CharField(blank=True, max_length=255, verbose_name='Wikipedia Slug')),
-                ('image', sorl.thumbnail.fields.ImageField(blank=True, upload_to='publisher/%Y/%m/%d/', verbose_name='Logo')),
-            ],
-            options={
-                'ordering': ['name'],
-            },
-        ),
-        migrations.CreateModel(
-            name='Role',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('mid', models.PositiveIntegerField(unique=True, verbose_name='Metron ID')),
-                ('name', models.CharField(max_length=25)),
-                ('order', models.PositiveSmallIntegerField(unique=True)),
-                ('notes', models.TextField(blank=True)),
-            ],
-            options={
-                'ordering': ['order'],
-            },
-        ),
-        migrations.CreateModel(
-            name='SeriesType',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('mid', models.PositiveIntegerField(unique=True, verbose_name='Metron ID')),
-                ('name', models.CharField(max_length=255)),
-                ('notes', models.TextField(blank=True)),
-                ('modified', models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                'ordering': ['name'],
-            },
-        ),
-        migrations.CreateModel(
-            name='Series',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('mid', models.PositiveIntegerField(unique=True, verbose_name='Metron ID')),
-                ('name', models.CharField(max_length=255)),
-                ('sort_name', models.CharField(max_length=255)),
-                ('slug', models.SlugField(max_length=255, unique=True)),
-                ('volume', models.PositiveSmallIntegerField(verbose_name='Volume Number')),
-                ('year_began', models.PositiveSmallIntegerField(verbose_name='Year Began')),
-                ('year_end', models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='Year Ended')),
-                ('desc', models.TextField(blank=True, verbose_name='Description')),
-                ('publisher', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='comics.Publisher')),
-                ('series_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='comics.SeriesType')),
-            ],
-            options={
-                'verbose_name_plural': 'Series',
-                'ordering': ['sort_name', 'year_began'],
-                'unique_together': {('publisher', 'name', 'volume')},
-            },
-        ),
-        migrations.CreateModel(
-            name='Issue',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('mid', models.PositiveIntegerField(unique=True, verbose_name='Metron ID')),
-                ('name', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=150, verbose_name='Story Title'), blank=True, null=True, size=None)),
-                ('slug', models.SlugField(max_length=255, unique=True)),
-                ('number', models.CharField(max_length=25)),
-                ('cover_date', models.DateField(verbose_name='Cover Date')),
-                ('store_date', models.DateField(blank=True, null=True, verbose_name='In Store Date')),
-                ('desc', models.TextField(blank=True, verbose_name='Description')),
-                ('image', sorl.thumbnail.fields.ImageField(blank=True, upload_to='issue/%Y/%m/%d/', verbose_name='Cover')),
-                ('arcs', models.ManyToManyField(blank=True, to='comics.Arc')),
-                ('creators', models.ManyToManyField(blank=True, through='comics.Credits', to='comics.Creator')),
-                ('series', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='comics.Series')),
-            ],
-            options={
-                'ordering': ['series__sort_name', 'cover_date', 'store_date', 'number'],
-                'unique_together': {('series', 'number')},
+                "ordering": ["series__sort_name", "cover_date", "store_date", "number"],
+                "unique_together": {("series", "number")},
             },
         ),
         migrations.AddField(
-            model_name='credits',
-            name='issue',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='comics.Issue'),
+            model_name="credits",
+            name="issue",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="comics.Issue"
+            ),
         ),
         migrations.AddField(
-            model_name='credits',
-            name='role',
-            field=models.ManyToManyField(to='comics.Role'),
+            model_name="credits",
+            name="role",
+            field=models.ManyToManyField(to="comics.Role"),
         ),
         migrations.AlterUniqueTogether(
-            name='credits',
-            unique_together={('issue', 'creator')},
+            name="credits", unique_together={("issue", "creator")}
         ),
     ]
