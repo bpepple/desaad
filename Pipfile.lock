@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bb87065024440bc0fb31888a839e8fdb0574579afce46ad7efff662f801d97ce"
+            "sha256": "83d44cee8ebe512b046a12b8577ad03db6e6c84346c85dea99d0d6614fb39a4c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -87,6 +87,13 @@
                 "sha256:d747dd3d23d77ef44c6a3526e274af6efeb0a6f1afd5a69ba4d5be4098c8e141"
             ],
             "version": "==2019.1"
+        },
+        "ratelimit": {
+            "hashes": [
+                "sha256:af8a9b64b821529aca09ebaf6d8d279100d766f19e90b5059ac6a718ca6dee42"
+            ],
+            "index": "pypi",
+            "version": "==2.2.1"
         },
         "sorl-thumbnail": {
             "hashes": [

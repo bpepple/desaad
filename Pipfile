@@ -12,6 +12,7 @@ psycopg2 = "*"
 sorl-thumbnail = "*"
 pillow = "*"
 natsort = "*"
+ratelimit = "*"
 
 [requires]
 python_version = "3.7"
