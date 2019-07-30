@@ -9,6 +9,7 @@ django-debug-toolbar = "*"
 [packages]
 django = "*"
 psycopg2 = "*"
+sorl-thumbnail = "*"
 
 [requires]
 python_version = "3.7"
