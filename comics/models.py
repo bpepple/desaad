@@ -99,19 +99,47 @@ class Series(models.Model):
 
 
 class Issue(models.Model):
+    STATUS_CHOICES = ((0, "Unread"), (1, "Partially Read"), (2, "Read"))
+
     mid = models.PositiveIntegerField("Metron ID", unique=True)
     series = models.ForeignKey(Series, on_delete=models.CASCADE)
     name = ArrayField(
         models.CharField("Story Title", max_length=150), null=True, blank=True
     )
+    number = models.CharField("Issue Number", max_length=25)
     slug = models.SlugField(max_length=255, unique=True)
-    number = models.CharField(max_length=25)
     arcs = models.ManyToManyField(Arc, blank=True)
     cover_date = models.DateField("Cover Date")
     store_date = models.DateField("In Store Date", null=True, blank=True)
     desc = models.TextField("Description", blank=True)
     image = ImageField("Cover", upload_to="issue/%Y/%m/%d/", blank=True)
     creators = models.ManyToManyField(Creator, through="Credits", blank=True)
+    file = models.CharField("File Path", max_length=300)
+    status = models.PositiveSmallIntegerField(
+        "Status", choices=STATUS_CHOICES, default=0, blank=True
+    )
+    leaf = models.PositiveSmallIntegerField(editable=False, default=0, blank=True)
+    page_count = models.PositiveSmallIntegerField(editable=False, default=1, blank=True)
+    mod_ts = models.DateTimeField()
+    import_date = models.DateTimeField("Date Imported", auto_now_add=True)
+
+    @property
+    def percent_read(self):
+        # If status is marked as read return 100%
+        if self.status == 2:
+            return 100
+        if self.leaf > 0:
+            # We need to increase the leaf by one to calculate
+            # the correct percent (due to index starting with 0)
+            read = self.leaf + 1
+        else:
+            read = self.leaf
+
+        try:
+            percent = round((read / self.page_count) * 100)
+        except ZeroDivisionError:
+            percent = 0
+        return percent
 
     def __str__(self):
         return f"{self.series.name} #{self.number}"
