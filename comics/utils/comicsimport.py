@@ -66,10 +66,8 @@ class Importer(object):
 
         return cover_date
 
-    def create_issue_slug(self, cover_date, issue_number, series_slug):
-        slug = orig = slugify(
-            series_slug + " " + issue_number + " " + str(cover_date.year)
-        )
+    def create_issue_slug(self, series_slug, issue_number):
+        slug = orig = slugify(series_slug + " " + issue_number)
 
         for x in itertools.count(1):
             if not Issue.objects.filter(slug=slug).exists():
@@ -180,7 +178,7 @@ class Importer(object):
         if create:
             # Get arc detail
             arc_data = talker.fetch_arc_data(arc_id)
-            
+
             arc_obj.name = arc_data["name"]
             arc_obj.slug = slugify(arc_data["name"])
             arc_obj.desc = arc_data["desc"]
@@ -221,9 +219,7 @@ class Importer(object):
             cover_date = self.create_cover_date(md.day, md.month, md.year)
             # This variable is *only* used for the slug.
             issue_number = IssueString(md.issue).asString(pad=3)
-            issue_slug = self.create_issue_slug(
-                cover_date, issue_number, series_obj.slug
-            )
+            issue_slug = self.create_issue_slug(series_obj.slug, issue_number)
             # TODO: Create the store_date from the issue_data["store_date"]
             # TODO: Add title array to issue
             try:
