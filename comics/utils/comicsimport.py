@@ -90,7 +90,7 @@ class Importer(object):
         if not (os.path.exists(comic.file)):
             self.logger.info(f"Removing missing {comic.file}")
             remove = True
-        elif not inFolderlist(comic.file, pathlist):
+        elif not in_folder_list(comic.file, pathlist):
             self.logger.info(f"Removing unwanted {comic.file}")
             remove = True
         else:
@@ -175,6 +175,21 @@ class Importer(object):
 
         return series_obj
 
+    def get_arc_obj(self, arc_id, talker):
+        arc_obj, create = Arc.objects.get_or_create(mid=int(arc_id))
+        if create:
+            # Get arc detail
+            arc_data = talker.fetch_arc_data(arc_id)
+            
+            arc_obj.name = arc_data["name"]
+            arc_obj.slug = slugify(arc_data["name"])
+            arc_obj.desc = arc_data["desc"]
+            # TODO: Add arc image
+            arc_obj.save()
+            print(f"Added arc: {arc_obj}")
+
+        return arc_obj
+
     def add_comic_from_metadata(self, talker, md):
         if not md.isEmpty:
             # Retrieve the Metron issue id from the comic file's tagged info
@@ -204,6 +219,7 @@ class Importer(object):
             # Create some of the information needed to create issue object.
             # TODO: Use the issue_data["cover_date"] for cover date instead of the metadata from the file.
             cover_date = self.create_cover_date(md.day, md.month, md.year)
+            # This variable is *only* used for the slug.
             issue_number = IssueString(md.issue).asString(pad=3)
             issue_slug = self.create_issue_slug(
                 cover_date, issue_number, series_obj.slug
@@ -214,7 +230,7 @@ class Importer(object):
                 issue_obj = Issue.objects.create(
                     file=md.path,
                     mid=int(issue_data["id"]),
-                    number=issue_number,
+                    number=issue_data["number"],
                     slug=issue_slug,
                     cover_date=cover_date,
                     desc=issue_data["desc"],
@@ -228,6 +244,13 @@ class Importer(object):
                 return
 
             print(f"Created {issue_obj}")
+
+            # Add any arcs to the issue.
+            for arc in issue_data["arcs"]:
+                if arc:
+                    arc_obj = self.get_arc_obj(arc["id"], talker)
+                    if arc_obj:
+                        issue_obj.arcs.add(arc_obj)
 
     def commit_metadata_list(self, md_list):
         talker = MetronTalker(self.auth)
@@ -260,8 +283,8 @@ class Importer(object):
 
         # Now let's remove any existing files in the db from the directory list of files.
         for comic_path in comics_path:
-            if f in filelist:
-                filelist.remove(f)
+            if comic_path in filelist:
+                filelist.remove(comic_path)
 
         comics_path = None
 
