@@ -4,9 +4,15 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+django-debug-toolbar = "*"
 
 [packages]
 django = "*"
+psycopg2 = "*"
+sorl-thumbnail = "*"
+pillow = "*"
+natsort = "*"
+ratelimit = "*"
 
 [requires]
 python_version = "3.7"
