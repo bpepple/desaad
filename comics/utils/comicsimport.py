@@ -46,6 +46,23 @@ class Importer(object):
         # Comic tag style
         self.style = MetaDataStyle.CIX
 
+    def create_publish_date(self, day, month, year):
+        pub_date = None
+        if year is not None:
+            try:
+                new_day = 1
+                new_month = 1
+                if month is not None:
+                    new_month = int(month)
+                if day is not None:
+                    new_day = int(day)
+                new_year = int(year)
+                pub_date = datetime(new_year, new_month, new_day)
+            finally:
+                pass
+
+        return pub_date
+
     def check_if_removed_or_modified(self, comic, pathlist):
         remove = False
 
@@ -91,8 +108,7 @@ class Importer(object):
         else:
             return None
 
-    @classmethod
-    def get_metron_issue_id(cls, md):
+    def get_metron_issue_id(self, md):
         mid = None
         if md.notes is not None:
             mid = re.search(r"\d+]", md.notes)
@@ -101,6 +117,48 @@ class Importer(object):
                 mid = mid[:-1]
 
         return mid
+
+    def get_publisher_obj(self, pub_id, talker):
+        pub_obj, create = Publisher.objects.get_or_create(mid=int(pub_id))
+        if create:
+            # Geet the publisher data
+            pub_data = talker.fetch_publisher_data(pub_id)
+
+            pub_obj.name = pub_data["name"]
+            pub_obj.slug = slugify(pub_data["name"])
+            pub_obj.desc = pub_data["desc"]
+            pub_obj.founded = pub_data["founded"]
+            # TODO: Save the publisher image
+            pub_obj.save()
+            print(f"Added publisher: {pub_obj}")
+
+        return pub_obj
+
+    def get_series_obj(self, series_id, talker):
+        series_obj, create = Series.objects.get_or_create(mid=int(series_id))
+        if create:
+            # Get the series detail
+            series_data = talker.fetch_series_data(series_id)
+            # Get the series type
+            series_type_obj, create = SeriesType.objects.get_or_create(
+                mid=int(series_data["series_type"]["id"]),
+                name=series_data["series_type"]["name"],
+            )
+            print(f"Series Type: {series_type_obj} Created: {create}")
+
+            series_obj.name = series_data["name"]
+            series_obj.slug = slugify(
+                series_data["name"] + " " + str(series_data["year_began"])
+            )
+            series_obj.sort_name = series_data["sort_name"]
+            series_obj.volume = series_data["volume"]
+            series_obj.year_began = series_data["year_began"]
+            series_obj.year_end = series_data["year_end"]
+            series_obj.desc = series_data["desc"]
+            series_obj.save()
+            print(f"Added series: {series_obj}")
+
+        return series_obj
 
     def add_comic_from_metadata(self, talker, md):
         if not md.isEmpty:
@@ -118,43 +176,15 @@ class Importer(object):
 
             # Now the publisher information
             pub_id = issue_data["publisher"]["id"]
-            pub_obj, create = Publisher.objects.get_or_create(mid=int(pub_id))
-            if create:
-                # Fetch publisher data
-                pub_data = talker.fetch_publisher_data(pub_id)
-
-                pub_obj.name = pub_data["name"]
-                pub_obj.slug = slugify(pub_data["name"])
-                pub_obj.desc = pub_data["desc"]
-                pub_obj.founded = pub_data["founded"]
-                # TODO: Save the publisher image
-                pub_obj.save()
-                print(f"Added publisher: {pub_obj}")
+            pub_obj = self.get_publisher_obj(pub_id, talker)
 
             # Now add the series info.
             series_id = issue_data["series"]["id"]
-            series_obj, create = Series.objects.get_or_create(mid=int(series_id))
-            if create:
-                # Get the series detail
-                series_data = talker.fetch_series_data(series_id)
+            series_obj = self.get_series_obj(series_id, talker)
 
-                series_type_obj, create = SeriesType.objects.get_or_create(
-                    mid=int(series_data["series_type"]["id"]),
-                    name=series_data["series_type"]["name"],
-                )
-                print(f"Series Type: {series_type_obj} Created: {create}")
-
-                series_obj.name = series_data["name"]
-                series_obj.slug = slugify(
-                    series_data["name"] + " " + str(series_data["year_began"])
-                )
-                series_obj.sort_name = series_data["sort_name"]
-                series_obj.volume = series_data["volume"]
-                series_obj.year_began = series_data["year_began"]
-                series_obj.year_end = series_data["year_end"]
-                series_obj.desc = series_data["desc"]
-                series_obj.save()
-                print(f"Added series: {series_obj}")
+            # Now let's create the issue
+            current_timezone = timezone.get_current_timezone()
+            tz = timezone.make_aware(md.mod_ts, current_timezone)
 
     def commit_metadata_list(self, md_list):
         talker = MetronTalker(self.auth)
