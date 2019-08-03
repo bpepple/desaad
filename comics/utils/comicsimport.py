@@ -1,13 +1,16 @@
+import itertools
 import logging
 import os
 import re
 from base64 import standard_b64encode
 from datetime import datetime
 
+from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.text import slugify
 
 from comics.comicapi.comicarchive import ComicArchive, MetaDataStyle
+from comics.comicapi.issuestring import IssueString
 from comics.models import (
     Arc,
     Creator,
@@ -46,8 +49,8 @@ class Importer(object):
         # Comic tag style
         self.style = MetaDataStyle.CIX
 
-    def create_publish_date(self, day, month, year):
-        pub_date = None
+    def create_cover_date(self, day, month, year):
+        cover_date = None
         if year is not None:
             try:
                 new_day = 1
@@ -57,11 +60,23 @@ class Importer(object):
                 if day is not None:
                     new_day = int(day)
                 new_year = int(year)
-                pub_date = datetime(new_year, new_month, new_day)
+                cover_date = datetime(new_year, new_month, new_day)
             finally:
                 pass
 
-        return pub_date
+        return cover_date
+
+    def create_issue_slug(self, cover_date, issue_number, series_slug):
+        slug = orig = slugify(
+            series_slug + " " + issue_number + " " + str(cover_date.year)
+        )
+
+        for x in itertools.count(1):
+            if not Issue.objects.filter(slug=slug).exists():
+                break
+            slug = f"{orig}-{x}"
+
+        return slug
 
     def check_if_removed_or_modified(self, comic, pathlist):
         remove = False
@@ -185,6 +200,34 @@ class Importer(object):
             # Now let's create the issue
             current_timezone = timezone.get_current_timezone()
             tz = timezone.make_aware(md.mod_ts, current_timezone)
+
+            # Create some of the information needed to create issue object.
+            # TODO: Use the issue_data["cover_date"] for cover date instead of the metadata from the file.
+            cover_date = self.create_cover_date(md.day, md.month, md.year)
+            issue_number = IssueString(md.issue).asString(pad=3)
+            issue_slug = self.create_issue_slug(
+                cover_date, issue_number, series_obj.slug
+            )
+            # TODO: Create the store_date from the issue_data["store_date"]
+            # TODO: Add title array to issue
+            try:
+                issue_obj = Issue.objects.create(
+                    file=md.path,
+                    mid=int(issue_data["id"]),
+                    number=issue_number,
+                    slug=issue_slug,
+                    cover_date=cover_date,
+                    desc=issue_data["desc"],
+                    page_count=md.page_count,
+                    mod_ts=tz,
+                    series=series_obj,
+                )
+            except IntegrityError as e:
+                self.logger.error(f"Attempting to create issue in database - {e}")
+                self.logger.info(f"Skipping: {md.path}")
+                return
+
+            print(f"Created {issue_obj}")
 
     def commit_metadata_list(self, md_list):
         talker = MetronTalker(self.auth)
