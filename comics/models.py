@@ -5,8 +5,8 @@ from sorl.thumbnail import ImageField
 
 class Arc(models.Model):
     mid = models.PositiveIntegerField("Metron ID", unique=True)
-    name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=255, unique=True)
+    name = models.CharField(max_length=200, blank=True)
+    slug = models.SlugField(max_length=255, blank=True)
     desc = models.TextField("Description", blank=True)
     image = ImageField(upload_to="arc/%Y/%m/%d/", blank=True)
 
@@ -19,8 +19,8 @@ class Arc(models.Model):
 
 class Creator(models.Model):
     mid = models.PositiveIntegerField("Metron ID", unique=True)
-    name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=255, unique=True)
+    name = models.CharField(max_length=200, blank=True)
+    slug = models.SlugField(max_length=255, blank=True)
     desc = models.TextField("Description", blank=True)
     wikipedia = models.CharField("Wikipedia Slug", max_length=255, blank=True)
     birth = models.DateField("Date of Birth", null=True, blank=True)
@@ -37,8 +37,8 @@ class Creator(models.Model):
 
 class Publisher(models.Model):
     mid = models.PositiveIntegerField("Metron ID", unique=True)
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, blank=True)
+    slug = models.SlugField(max_length=255, blank=True)
     founded = models.PositiveSmallIntegerField("Year Founded", null=True, blank=True)
     desc = models.TextField("Description", blank=True)
     wikipedia = models.CharField("Wikipedia Slug", max_length=255, blank=True)
@@ -79,14 +79,14 @@ class SeriesType(models.Model):
 
 class Series(models.Model):
     mid = models.PositiveIntegerField("Metron ID", unique=True)
-    name = models.CharField(max_length=255)
-    sort_name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True)
-    volume = models.PositiveSmallIntegerField("Volume Number")
-    year_began = models.PositiveSmallIntegerField("Year Began")
+    name = models.CharField(max_length=255, blank=True)
+    sort_name = models.CharField(max_length=255, blank=True)
+    slug = models.SlugField(max_length=255, blank=True)
+    volume = models.PositiveSmallIntegerField("Volume Number", null=True, blank=True)
+    year_began = models.PositiveSmallIntegerField("Year Began", null=True, blank=True)
     year_end = models.PositiveSmallIntegerField("Year Ended", null=True, blank=True)
-    series_type = models.ForeignKey(SeriesType, on_delete=models.CASCADE)
-    publisher = models.ForeignKey(Publisher, on_delete=models.CASCADE)
+    series_type = models.ForeignKey(SeriesType, on_delete=models.CASCADE,null=True, blank=True)
+    publisher = models.ForeignKey(Publisher, on_delete=models.CASCADE,null=True, blank=True)
     desc = models.TextField("Description", blank=True)
 
     def __str__(self):
@@ -94,7 +94,6 @@ class Series(models.Model):
 
     class Meta:
         verbose_name_plural = "Series"
-        unique_together = ["publisher", "name", "volume"]
         ordering = ["sort_name", "year_began"]
 
 
