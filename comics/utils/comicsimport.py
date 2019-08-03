@@ -20,8 +20,6 @@ from comics.models import (
 )
 from comics.utils.metrontalker import MetronTalker
 
-ONE_MINUTE = 60
-
 
 def get_recursive_filelist(pathlist):
     # Get a recursive list of all files under all path items in the list.
