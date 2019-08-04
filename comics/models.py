@@ -54,14 +54,13 @@ class Publisher(models.Model):
 class Role(models.Model):
     mid = models.PositiveIntegerField("Metron ID", unique=True)
     name = models.CharField(max_length=25)
-    order = models.PositiveSmallIntegerField(unique=True)
     notes = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        ordering = ["order"]
+        ordering = ["name"]
 
 
 class SeriesType(models.Model):

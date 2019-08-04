@@ -275,7 +275,7 @@ class ComicImporter(object):
                         role_name = role["name"].title()
                         role_id = int(role["id"])
                         role_obj, _ = Role.objects.get_or_create(
-                            name=role_name, mid=role_id, order=role_id
+                            name=role_name, mid=role_id
                         )
                         credit_obj.role.add(role_obj)
 
