@@ -21,7 +21,7 @@ from comics.models import (
     Series,
     SeriesType,
 )
-from comics.utils.metrontalker import MetronTalker
+from comics.importer.metrontalker import MetronTalker
 
 
 def get_recursive_filelist(pathlist):
