@@ -102,8 +102,13 @@ class ComicImporter(object):
                 remove = True
 
         if remove:
-            # TODO: Add removal code here.
-            pass
+            series = Series.objects.get(id=comic.series.id)
+            count = series.issue_count
+            if count == 1:
+                series.delete()
+                print(f"Deleting series: {series}")
+            else:
+                comic.delete()
 
     def get_comic_metadata(self, path):
         ca = ComicArchive(path)
@@ -157,7 +162,6 @@ class ComicImporter(object):
                 mid=int(series_data["series_type"]["id"]),
                 name=series_data["series_type"]["name"],
             )
-            print(f"Series Type: {series_type_obj} Created: {create}")
 
             series_obj.name = series_data["name"]
             series_obj.slug = slugify(

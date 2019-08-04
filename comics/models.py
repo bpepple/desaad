@@ -91,6 +91,10 @@ class Series(models.Model):
     def __str__(self):
         return f"{self.name} ({self.year_began})"
 
+    @property
+    def issue_count(self):
+        return self.issue_set.all().count()
+
     class Meta:
         verbose_name_plural = "Series"
         ordering = ["sort_name", "year_began"]
