@@ -34,7 +34,7 @@ def get_recursive_filelist(pathlist):
     return filelist
 
 
-class Importer(object):
+class ComicImporter(object):
     def __init__(self, auth):
         # Configure Logging
         logging.getLogger("requests").setLevel(logging.WARNING)
