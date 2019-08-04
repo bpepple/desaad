@@ -188,6 +188,20 @@ class ComicImporter(object):
 
         return arc_obj
 
+    def get_creator_obj(self, creator_id, talker):
+        creator_obj, create = Creator.objects.get_or_create(mid=int(creator_id))
+        if create:
+            # Get the creator data
+            creator_data = talker.fetch_creator_data(creator_id)
+
+            creator_obj.name = creator_data["name"]
+            creator_obj.desc = creator_data["desc"]
+            # TODO: Add birth & death dates
+            # TODO: Add image
+            creator_obj.save()
+
+        return creator_obj
+
     def add_comic_from_metadata(self, talker, md):
         if not md.isEmpty:
             # Retrieve the Metron issue id from the comic file's tagged info
@@ -247,6 +261,25 @@ class ComicImporter(object):
                     arc_obj = self.get_arc_obj(arc["id"], talker)
                     if arc_obj:
                         issue_obj.arcs.add(arc_obj)
+
+            # Add any creator credits to the issue
+            for credit in issue_data["credits"]:
+                if credit:
+                    creator_id = credit["id"]
+                    creator_obj = self.get_creator_obj(creator_id, talker)
+                    credit_obj, _ = Credits.objects.get_or_create(
+                        issue=issue_obj, creator=creator_obj
+                    )
+                    roles = credit["role"]
+                    for role in roles:
+                        role_name = role["name"].title()
+                        role_id = int(role["id"])
+                        role_obj, _ = Role.objects.get_or_create(
+                            name=role_name, mid=role_id, order=role_id
+                        )
+                        credit_obj.role.add(role_obj)
+
+                    self.logger.info(f"Added credit for {creator_obj} to {issue_obj}")
 
     def commit_metadata_list(self, md_list):
         talker = MetronTalker(self.auth)
