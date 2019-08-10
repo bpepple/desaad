@@ -11,6 +11,7 @@ from django.utils.text import slugify
 
 from comics.comicapi.comicarchive import ComicArchive, MetaDataStyle
 from comics.comicapi.issuestring import IssueString
+from comics.importer.metrontalker import MetronTalker
 from comics.models import (
     Arc,
     Creator,
@@ -21,7 +22,7 @@ from comics.models import (
     Series,
     SeriesType,
 )
-from comics.importer.metrontalker import MetronTalker
+from desaad.settings import METRON_PASS, METRON_USER
 
 
 def get_recursive_filelist(pathlist):
@@ -35,7 +36,7 @@ def get_recursive_filelist(pathlist):
 
 
 class ComicImporter(object):
-    def __init__(self, auth):
+    def __init__(self):
         # Configure Logging
         logging.getLogger("requests").setLevel(logging.WARNING)
         self.logger = logging.getLogger("desaad")
@@ -44,6 +45,7 @@ class ComicImporter(object):
         self.directory_path = "/home/bpepple/Downloads/Test"
 
         # Metron creditials
+        auth = f"{METRON_USER}:{METRON_PASS}"
         self.auth = standard_b64encode(auth.encode("utf-8"))
 
         # Comic tag style
