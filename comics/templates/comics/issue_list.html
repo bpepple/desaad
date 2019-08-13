@@ -3,9 +3,20 @@
 {% block title %}Issues{% endblock title %}
 
 {% block content %}
-    <div class="container">
+<div class="container">
     {% if issue_list %}
-        <p>There are issues</p>
-    {% endif %}
+    <div class="row">
+        {% for issue in issue_list %}
+        <div class="col-3">
+            {% if issue.image %}
+            <img src="{{ issue.image.url }}" alt="{{ issue }}" class="img-thumbnail">
+            {% else %}
+            <!-- TODO: Add missing image here. -->
+            <p>No image available</p>
+            {%  endif %}
+        </div>
+        {% endfor %}
     </div>
+    {% endif %}
+</div>
 {% endblock %}
