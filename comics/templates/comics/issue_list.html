@@ -1,0 +1,11 @@
+{% extends parent_template|default:"base.html" %}
+
+{% block title %}Issues{% endblock title %}
+
+{% block content %}
+    <div class="container">
+    {% if issue_list %}
+        <p>There are issues</p>
+    {% endif %}
+    </div>
+{% endblock %}
