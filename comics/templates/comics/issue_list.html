@@ -1,4 +1,5 @@
 {% extends parent_template|default:"base.html" %}
+{% load static %}
 
 {% block title %}Issues{% endblock title %}
 
@@ -11,9 +12,10 @@
             {% if issue.image %}
             <img src="{{ issue.image.url }}" alt="{{ issue }}" class="img-thumbnail">
             {% else %}
-            <!-- TODO: Add missing image here. -->
-            <p>No image available</p>
+            <img src="{% static 'site/img/image-not-found.webp' %}" alt="No image for {{ issue }}"
+                class="img-thumbnail">
             {%  endif %}
+            <p class="text-center"><a href="">{{ issue }}</a></p>
         </div>
         {% endfor %}
     </div>
