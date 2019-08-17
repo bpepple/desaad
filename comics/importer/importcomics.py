@@ -12,6 +12,7 @@ from django.utils.text import slugify
 from comics.comicapi.comicarchive import ComicArchive, MetaDataStyle
 from comics.comicapi.issuestring import IssueString
 from comics.importer.metrontalker import MetronTalker
+from comics.importer.utils import check_for_directories, create_issues_image_path
 from comics.models import (
     Arc,
     Creator,
@@ -22,7 +23,7 @@ from comics.models import (
     Series,
     SeriesType,
 )
-from desaad.settings import METRON_PASS, METRON_USER
+from desaad.settings import MEDIA_ROOT, METRON_PASS, METRON_USER
 
 
 def get_recursive_filelist(pathlist):
@@ -234,7 +235,12 @@ class ComicImporter(object):
             current_timezone = timezone.get_current_timezone()
             tz = timezone.make_aware(md.mod_ts, current_timezone)
 
-            # Create some of the information needed to create issue object.
+            # Fetch the issue image
+            img_db_path = create_issues_image_path(issue_data["image"])
+            img_save_path = MEDIA_ROOT + os.sep + img_db_path
+            check_for_directories(img_save_path)
+            talker.fetch_image(issue_data["image"], img_save_path)
+
             # TODO: Use the issue_data["cover_date"] for cover date instead of the metadata from the file.
             cover_date = self.create_cover_date(md.day, md.month, md.year)
             # This variable is *only* used for the slug.
@@ -250,6 +256,7 @@ class ComicImporter(object):
                     slug=issue_slug,
                     cover_date=cover_date,
                     desc=issue_data["desc"],
+                    image=img_db_path,
                     page_count=md.page_count,
                     mod_ts=tz,
                     series=series_obj,

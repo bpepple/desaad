@@ -12,9 +12,7 @@ class MetronTalker:
     def __init__(self, auth):
         self.baseurl = "https://metron.cloud/api"
         self.auth_str = f"Basic {auth.decode('utf-8')}"
-        self.user_agent = (
-            f"desaad/version ({platform.system()}; {platform.release()})"
-        )
+        self.user_agent = f"desaad/version ({platform.system()}; {platform.release()})"
 
     @sleep_and_retry
     @limits(calls=20, period=ONE_MINUTE)
@@ -23,7 +21,7 @@ class MetronTalker:
             request = Request(url)
         else:
             raise ValueError from None
-        
+
         request.add_header("Authorization", self.auth_str)
         request.add_header("User-Agent", self.user_agent)
 
@@ -40,6 +38,11 @@ class MetronTalker:
         resp = json.loads(content.read().decode("utf-8"))
 
         return resp
+
+    def fetch_image(self, url, file_name):
+        with urlopen(url) as img:
+            with open(file_name, "wb") as f:
+                f.write(img.read())
 
     def fetch_publisher_data(self, id):
         url = self.baseurl + f"/publisher/{id}/?format=json"
