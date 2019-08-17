@@ -17,7 +17,9 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
-urlpatterns = [path("admin/", admin.site.urls)]
+from comics.urls import issue as issue_urls
+
+urlpatterns = [path("admin/", admin.site.urls), path("issue/", include(issue_urls))]
 
 if settings.DEBUG:
     import debug_toolbar
