@@ -2,7 +2,7 @@ from base64 import standard_b64encode
 from unittest import TestCase, main
 from unittest.mock import patch
 
-from comics.utils.metrontalker import MetronTalker
+from comics.importer.metrontalker import MetronTalker
 
 
 class TestMetronTalker(TestCase):
@@ -64,7 +64,7 @@ class TestMetronTalker(TestCase):
             "teams": [],
         }
 
-    @patch("comics.utils.metrontalker.MetronTalker.fetch_response")
+    @patch("comics.importer.metrontalker.MetronTalker.fetch_response")
     def test_fetch_issue_by_id(self, MockFetch):
         MockFetch.return_value = self.resp
         talker = MetronTalker(self.base64string)
