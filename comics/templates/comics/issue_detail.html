@@ -1,0 +1,23 @@
+{% extends parent_template|default:"base.html" %}
+{% load static %}
+
+{% block title %}{{ issue }}{% endblock title %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <img src="{{ issue.image.url }}" alt="{{ issue }}" class="img-thumbnail">
+        </div>
+        <div class="col-9">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ issue }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Summary</h6>
+                    <p class="card-text">{{ issue.desc }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
