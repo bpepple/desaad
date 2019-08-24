@@ -1,20 +1,45 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">Desaad</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="#">Series</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'issue:list' %}">Issues</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Publisher</a>
-            </li>
-        </ul>
-    </div>
-</nav>
+{% load static %}
+    <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        {% comment %} <a class="navbar-item" href="{% url 'home' %}">
+          <img src="{% static 'site/img/atomic-symbol.png' %}" width="24" height="24" alt="Logo">
+        </a> {% endcomment %}
+        <span class="navbar-burger burger" data-target="navMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </div>
+      <div id="navMenu" class="navbar-menu">
+        <div class="navbar-start">
+          <a class="navbar-item" href="">Home</a>
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link">Browse</a>
+            <div class="navbar-dropdown">
+              <a class="navbar-item" href="">Publishers</a>
+              <a class="navbar-item" href="">Series</a>
+              <a class="navbar-item" href="{% url 'issue:list' %}">Issues</a>
+              <a class="navbar-item" href="">Creators</a>
+              <a class="navbar-item" href="">Characters</a>
+              <a class="navbar-item" href="">Story Arcs</a>
+              <a class="navbar-item" href="">Teams</a>
+            </div>
+          </div>
+          </div>
+        </div>
+        {% comment %} <div class="navbar-end">
+          {% if user.is_authenticated %}
+            <div class="navbar-item">
+              <a class="button is-light" href="{% url 'logout' %}">Log out</a>
+            </div>
+          {% else %}
+            <div class="navbar-item">
+              <a class="button is-light" href="{% url 'signup' %}">Sign Up</a>
+            </div>
+            <div class="navbar-item">
+              <a class="button is-light" href="{% url 'login' %}">Log in</a>
+            </div>
+          {% endif %}
+        </div> {% endcomment %}
+      </div>
+    </nav>
