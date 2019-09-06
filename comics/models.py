@@ -84,8 +84,12 @@ class Series(models.Model):
     volume = models.PositiveSmallIntegerField("Volume Number", null=True, blank=True)
     year_began = models.PositiveSmallIntegerField("Year Began", null=True, blank=True)
     year_end = models.PositiveSmallIntegerField("Year Ended", null=True, blank=True)
-    series_type = models.ForeignKey(SeriesType, on_delete=models.CASCADE,null=True, blank=True)
-    publisher = models.ForeignKey(Publisher, on_delete=models.CASCADE,null=True, blank=True)
+    series_type = models.ForeignKey(
+        SeriesType, on_delete=models.CASCADE, null=True, blank=True
+    )
+    publisher = models.ForeignKey(
+        Publisher, on_delete=models.CASCADE, null=True, blank=True
+    )
     desc = models.TextField("Description", blank=True)
 
     def __str__(self):
@@ -94,6 +98,12 @@ class Series(models.Model):
     @property
     def issue_count(self):
         return self.issue_set.all().count()
+
+    def first_issue_cover(self):
+        try:
+            return self.issue_set.all().first().image
+        except AttributeError:
+            return None
 
     class Meta:
         verbose_name_plural = "Series"
