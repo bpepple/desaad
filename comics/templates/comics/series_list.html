@@ -1,0 +1,65 @@
+{% extends parent_template|default:"base.html" %}
+{% load static %}
+
+{% block title %}Series{% endblock title %}
+
+{% block content %}
+  {% if series_list %}
+  <!-- hero -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title is-3">Series List</h1>
+      </div>
+    </div>
+  </section>
+  <!-- end hero -->
+
+  <!-- series list -->
+  <section>
+    <div class="container">
+      <!-- main column -->
+      <div class="column">
+        <div class="columns is-multiline">
+          {% for series in series_list %}
+            <div class="column is-one-quarter">
+              <div class="card">
+                <div class="card-header">
+                  <p class="card-header-title is-centered">{{ series }}</p>
+                </div>
+                <div class="card-image">
+                  <figure class="image is-2by3">
+                    {% with cover=series.first_issue_cover %}
+                      {% if cover %}
+                        <img src="{{ series.first_issue_cover.url }}" alt="{{ series }}"
+                      {% else %}
+                        <img src="{% static 'site/img/image-not-found.webp' %}" alt="No image for {{ series }}">
+                      {% endif %}
+                    {% endwith %}
+                  </figure>
+                </div>
+                <footer class="card-footer">
+                  {% with count=series.issue_count %}
+                    {% if count %}
+                      <p class="card-footer-item">{{ series.issue_count }} issue{{ count|pluralize }}</p>
+                    {% endif %}
+                  {% endwith %}
+                  <a href="{% url 'series:detail' series.slug %}" class="card-footer-item">Info</a>
+                </footer>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <!-- end main column-->
+    </div>
+  </section>
+  <!-- end series list -->
+  {% else %}
+  <section>
+    <div class="container">
+      <p>No Series currently available.</p>
+    </div>
+  </section>
+  {% endif %}
+{% endblock %}
