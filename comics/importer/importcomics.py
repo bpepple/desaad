@@ -88,7 +88,7 @@ class ComicImporter(object):
                     return True
             return False
 
-        if not (os.path.exists(comic.file)):
+        if not os.path.exists(comic.file):
             self.logger.info(f"Removing missing {comic.file}")
             remove = True
         elif not in_folder_list(comic.file, pathlist):
