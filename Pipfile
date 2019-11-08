@@ -5,6 +5,8 @@ verify_ssl = true
 
 [dev-packages]
 django-debug-toolbar = "*"
+pylint-django = "*"
+pylint = "*"
 
 [packages]
 django = "*"
