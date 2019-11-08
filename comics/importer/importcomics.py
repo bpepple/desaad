@@ -43,7 +43,7 @@ class ComicImporter(object):
         self.logger = logging.getLogger("desaad")
 
         # TODO: Use SETTINGS variable for this.
-        self.directory_path = "/home/bpepple/Downloads/Test"
+        self.directory_path = "/home/bpepple/Documents/Comics"
 
         # Metron creditials
         auth = f"{METRON_USER}:{METRON_PASS}"
