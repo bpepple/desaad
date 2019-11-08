@@ -88,7 +88,7 @@ class ComicImporter(object):
                     return True
             return False
 
-        if not os.path.exists(comic.file):
+        if not (os.path.exists(comic.file)):
             self.logger.info(f"Removing missing {comic.file}")
             remove = True
         elif not in_folder_list(comic.file, pathlist):
@@ -160,6 +160,11 @@ class ComicImporter(object):
         if create:
             # Get the series detail
             series_data = talker.fetch_series_data(series_id)
+
+            # Get the Publisher
+            pub_id = series_data["publisher"]
+            pub_obj = self.get_publisher_obj(pub_id, talker)
+
             # Get the series type
             series_type_obj, create = SeriesType.objects.get_or_create(
                 mid=int(series_data["series_type"]["id"]),
@@ -175,6 +180,8 @@ class ComicImporter(object):
             series_obj.year_began = series_data["year_began"]
             series_obj.year_end = series_data["year_end"]
             series_obj.desc = series_data["desc"]
+            series_obj.series_type = series_type_obj
+            series_obj.publisher = pub_obj
             series_obj.save()
             print(f"Added series: {series_obj}")
 
@@ -223,11 +230,7 @@ class ComicImporter(object):
             if issue_data is None:
                 return False
 
-            # Now the publisher information
-            pub_id = issue_data["publisher"]["id"]
-            pub_obj = self.get_publisher_obj(pub_id, talker)
-
-            # Now add the series info.
+            # Now get the series info.
             series_id = issue_data["series"]["id"]
             series_obj = self.get_series_obj(series_id, talker)
 
