@@ -16,7 +16,7 @@ def create_date_path():
 
 
 def check_for_directories(path):
-    head, tail = os.path.split(path)
+    head, _ = os.path.split(path)
     if not os.path.isdir(head):
         os.makedirs(head)
         print(f"Created directory: {head}")
