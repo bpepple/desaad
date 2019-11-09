@@ -1,4 +1,4 @@
-from django.urls import path, re_path
+from django.urls import path
 
 from comics.views.series import SeriesDetail, SeriesIssueList, SeriesList
 
