@@ -12,7 +12,11 @@ from django.utils.text import slugify
 from comics.comicapi.comicarchive import ComicArchive, MetaDataStyle
 from comics.comicapi.issuestring import IssueString
 from comics.importer.metrontalker import MetronTalker
-from comics.importer.utils import check_for_directories, create_issues_image_path
+from comics.importer.utils import (
+    check_for_directories,
+    create_issues_image_path,
+    create_creator_image_path,
+)
 from comics.models import (
     Arc,
     Creator,
@@ -218,10 +222,27 @@ class ComicImporter:
             # Get the creator data
             creator_data = self.talker.fetch_creator_data(creator_id)
 
+            # Save data the doesn't neeed to be massaged
             creator_obj.name = creator_data["name"]
+            creator_obj.slug = slugify(creator_data["name"])
             creator_obj.desc = creator_data["desc"]
-            # TODO: Add birth & death dates
-            # TODO: Add image
+
+            # If there is a creator image, fetch it.
+            if creator_data["image"] is not None:
+                img_db_path = create_creator_image_path(creator_data["image"])
+                img_save_path = MEDIA_ROOT + os.sep + img_db_path
+                check_for_directories(img_save_path)
+                self.talker.fetch_image(creator_data["image"], img_save_path)
+                creator_obj.image = img_db_path
+
+            # Convert date of birth to datetime if present
+            if creator_data["birth"] is not None:
+                creator_obj.birth = datetime.strptime(creator_data["birth"], "%Y-%m-%d")
+
+            # Convert date of death to datetime if present
+            if creator_data["death"] is not None:
+                creator_obj.death = datetime.strptime(creator_data["death"], "%Y-%m-%d")
+
             creator_obj.save()
             self.logger.info(f"Added Creator: {creator_obj}")
 
@@ -255,14 +276,12 @@ class ComicImporter:
             check_for_directories(img_save_path)
             self.talker.fetch_image(issue_data["image"], img_save_path)
 
-            # TODO: Use the issue_data["cover_date"] for cover date instead of the metadata from the file.
-            cover_date = self.create_cover_date(
-                meta_data.day, meta_data.month, meta_data.year
-            )
+            if issue_data["cover_date"] is not None:
+                cover_date = datetime.strptime(issue_data["cover_date"], "%Y-%m-%d")
+
             # This variable is *only* used for the slug.
             issue_number = IssueString(meta_data.issue).asString(pad=3)
             issue_slug = self.create_issue_slug(series_obj.slug, issue_number)
-            # TODO: Create the store_date from the issue_data["store_date"]
             # TODO: Add title array to issue
             try:
                 issue_obj = Issue.objects.create(
@@ -283,6 +302,13 @@ class ComicImporter:
                 return False
 
             self.logger.info(f"Created {issue_obj}")
+
+            # If there is a store date, let's add it to the issue.
+            if issue_data["store_date"] is not None:
+                issue_obj.store_date = datetime.strptime(
+                    issue_data["store_date"], "%Y-%m-%d"
+                )
+                issue_obj.save()
 
             # Add any arcs to the issue.
             for arc in issue_data["arcs"]:
