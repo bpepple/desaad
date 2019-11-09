@@ -252,6 +252,14 @@ class ComicImporter:
 
         return creator_obj
 
+    @staticmethod
+    def get_role_obj(role):
+        role_name = role["name"].title()
+        role_id = int(role["id"])
+        role_obj, _ = Role.objects.get_or_create(name=role_name, mid=role_id)
+
+        return role_obj
+
     def fetch_issue_image(self, image):
         img_db_path = create_issues_image_path(image)
         img_save_path = MEDIA_ROOT + os.sep + img_db_path
@@ -337,11 +345,7 @@ class ComicImporter:
                     )
                     roles = credit["role"]
                     for role in roles:
-                        role_name = role["name"].title()
-                        role_id = int(role["id"])
-                        role_obj, _ = Role.objects.get_or_create(
-                            name=role_name, mid=role_id
-                        )
+                        role_obj = self.get_role_obj(role)
                         credit_obj.role.add(role_obj)
 
                     self.logger.info(f"Added credit for {creator_obj} to {issue_obj}")
