@@ -31,8 +31,8 @@ def get_recursive_filelist(pathlist):
     filelist = []
     if os.path.isdir(pathlist):
         for root, _, files in os.walk(pathlist):
-            for f in files:
-                filelist.append(os.path.join(root, f))
+            for comic in files:
+                filelist.append(os.path.join(root, comic))
     return filelist
 
 
@@ -80,10 +80,10 @@ class ComicImporter:
     def create_issue_slug(series_slug, issue_number):
         slug = orig = slugify(series_slug + " " + issue_number)
 
-        for x in itertools.count(1):
+        for x_count in itertools.count(1):
             if not Issue.objects.filter(slug=slug).exists():
                 break
-            slug = f"{orig}-{x}"
+            slug = f"{orig}-{x_count}"
 
         return slug
 
@@ -91,12 +91,13 @@ class ComicImporter:
         remove = False
 
         def in_folder_list(filepath, pathlist):
-            for p in pathlist:
-                if p in filepath:
+            for f_file in pathlist:
+                if f_file in filepath:
                     return True
             return False
 
-        if not (os.path.exists(comic.file)):
+        existing = os.path.exists(comic.file)
+        if not existing:
             self.logger.info(f"Removing missing {comic.file}")
             remove = True
         elif not in_folder_list(comic.file, pathlist):
@@ -104,8 +105,8 @@ class ComicImporter:
             remove = True
         else:
             current_timezone = timezone.get_current_timezone()
-            c = datetime.utcfromtimestamp(os.path.getmtime(comic.file))
-            curr = timezone.make_aware(c, current_timezone)
+            current_date = datetime.utcfromtimestamp(os.path.getmtime(comic.file))
+            curr = timezone.make_aware(current_date, current_timezone)
             prev = comic.mod_ts
 
             if curr != prev:
@@ -122,15 +123,17 @@ class ComicImporter:
                 comic.delete()
 
     def get_comic_metadata(self, path):
-        ca = ComicArchive(path)
-        if ca.seemsToBeAComicArchive():
+        comic_archive = ComicArchive(path)
+        if comic_archive.seemsToBeAComicArchive():
             self.logger.info(f"Reading in {self.read_count} {path}")
             self.read_count += 1
-            if ca.hasMetadata(self.style):
-                meta_data = ca.readMetadata(self.style)
-                meta_data.path = ca.path
-                meta_data.page_count = ca.page_count
-                meta_data.mod_ts = datetime.utcfromtimestamp(os.path.getmtime(ca.path))
+            if comic_archive.hasMetadata(self.style):
+                meta_data = comic_archive.readMetadata(self.style)
+                meta_data.path = comic_archive.path
+                meta_data.page_count = comic_archive.page_count
+                meta_data.mod_ts = datetime.utcfromtimestamp(
+                    os.path.getmtime(comic_archive.path)
+                )
                 return meta_data
         else:
             return None
@@ -244,7 +247,7 @@ class ComicImporter:
 
             # Now let's create the issue
             current_timezone = timezone.get_current_timezone()
-            tz = timezone.make_aware(meta_data.mod_ts, current_timezone)
+            t_zone = timezone.make_aware(meta_data.mod_ts, current_timezone)
 
             # Fetch the issue image
             img_db_path = create_issues_image_path(issue_data["image"])
@@ -253,7 +256,9 @@ class ComicImporter:
             self.talker.fetch_image(issue_data["image"], img_save_path)
 
             # TODO: Use the issue_data["cover_date"] for cover date instead of the metadata from the file.
-            cover_date = self.create_cover_date(meta_data.day, meta_data.month, meta_data.year)
+            cover_date = self.create_cover_date(
+                meta_data.day, meta_data.month, meta_data.year
+            )
             # This variable is *only* used for the slug.
             issue_number = IssueString(meta_data.issue).asString(pad=3)
             issue_slug = self.create_issue_slug(series_obj.slug, issue_number)
@@ -269,11 +274,11 @@ class ComicImporter:
                     desc=issue_data["desc"],
                     image=img_db_path,
                     page_count=meta_data.page_count,
-                    mod_ts=tz,
+                    mod_ts=t_zone,
                     series=series_obj,
                 )
-            except IntegrityError as e:
-                self.logger.error(f"Attempting to create issue in database - {e}")
+            except IntegrityError as i_error:
+                self.logger.error(f"Attempting to create issue in database - {i_error}")
                 self.logger.info(f"Skipping: {meta_data.path}")
                 return False
 
