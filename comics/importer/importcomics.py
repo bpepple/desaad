@@ -63,13 +63,25 @@ class ComicImporter:
         self.talker = None
 
     @staticmethod
-    def create_issue_slug(series_slug, issue_number):
-        slug = orig = slugify(series_slug + " " + issue_number)
+    def create_issue_slug(series, number):
+        formatted_number = IssueString(number).asString(pad=3)
+        slug = orig = slugify(series + "-" + formatted_number)
 
-        for x_count in itertools.count(1):
+        for count in itertools.count(1):
             if not Issue.objects.filter(slug=slug).exists():
                 break
-            slug = f"{orig}-{x_count}"
+            slug = f"{orig}-{count}"
+
+        return slug
+
+    @staticmethod
+    def create_series_slug(series, year):
+        slug = orig = slugify(series + "-" + str(year))
+
+        for count in itertools.count(1):
+            if not Series.objects.filter(slug=slug).exists():
+                break
+            slug = f"{orig}-{count}"
 
         return slug
 
@@ -168,8 +180,8 @@ class ComicImporter:
             )
 
             series_obj.name = series_data["name"]
-            series_obj.slug = slugify(
-                series_data["name"] + " " + str(series_data["year_began"])
+            series_obj.slug = self.create_series_slug(
+                series_data["name"], series_data["year_began"]
             )
             series_obj.sort_name = series_data["sort_name"]
             series_obj.volume = series_data["volume"]
@@ -279,9 +291,7 @@ class ComicImporter:
             if issue_data["cover_date"] is not None:
                 cover_date = datetime.strptime(issue_data["cover_date"], "%Y-%m-%d")
 
-            # This variable is *only* used for the slug.
-            issue_number = IssueString(meta_data.issue).asString(pad=3)
-            issue_slug = self.create_issue_slug(series_obj.slug, issue_number)
+            issue_slug = self.create_issue_slug(series_obj.slug, meta_data.issue)
             # TODO: Add title array to issue
             try:
                 issue_obj = Issue.objects.create(
