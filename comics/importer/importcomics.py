@@ -85,6 +85,17 @@ class ComicImporter:
 
         return slug
 
+    @staticmethod
+    def create_creator_slug(name):
+        slug = orig = slugify(name)
+
+        for count in itertools.count(1):
+            if not Creator.objects.filter(slug=slug).exists():
+                break
+            slug = f"{orig}-{count}"
+
+        return slug
+
     def check_if_removed_or_modified(self, comic, pathlist):
         remove = False
 
@@ -230,7 +241,7 @@ class ComicImporter:
 
             # Save data the doesn't neeed to be massaged
             creator_obj.name = creator_data["name"]
-            creator_obj.slug = slugify(creator_data["name"])
+            creator_obj.slug = self.create_creator_slug(creator_data["name"])
             creator_obj.desc = creator_data["desc"]
 
             # If there is a creator image, fetch it.
