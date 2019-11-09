@@ -1,0 +1,125 @@
+{% extends parent_template|default:"base.html" %}
+{% load static %}
+
+{% block title %}{{ series.name }}{% endblock title %}
+
+{% block content %}
+<section>
+  <div class="container">
+    <!-- series nav -->
+    <nav class="level">
+      <div class="level-left">
+        <div class="level-item">
+          {% if navigation.previous_series %}
+            <a class="button is-link" href="{% url 'series:detail' navigation.previous_series.slug %}">
+              <span class="icon is-small">
+                <i class="fas fa-arrow-left"></i>
+              </span>
+              <span>Previous Series</span>
+            </a>
+          {% else %}
+              <a class="button" disabled>
+                <span class="icon is-small">
+                  <i class="fas fa-arrow-left"></i>
+                </span>
+                <span>Previous Series</span>
+              </a>
+          {% endif %}
+        </div>
+        <div class="level-item">
+          {% if navigation.next_series %}
+            <a class="button is-link" href="{% url 'series:detail' navigation.next_series.slug %}">
+              <span>Next Series</span>
+              <span class="icon is-small">
+                <i class="fas fa-arrow-right"></i>
+              </span>
+            </a>
+          {% else %}
+            <a class="button" disabled>
+              <span>Next Series</span>
+              <span class="icon is-small">
+                <i class="fas fa-arrow-right"></i>
+              </span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+    <!--  end series nav -->
+
+    <!-- page header -->
+    <nav class="level">
+      <div class="level-left">
+        <div class="level-item">
+          <div>
+            <p class="title">{{ series }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="level-right">
+        <div class="level-item">
+          <a class="button is-link" href="{% url 'series:issue' series.slug %}" title="Open issue list for series">
+            <span class="icon is-small">
+              <i class="fas fa-list"></i>
+            </span>
+            <span>Issue List</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+    <!-- end of page header -->
+
+    <!-- main page content -->
+    <div class="columns">
+      <!-- series image -->
+      <div class="column is-one-fifth">
+        <div class="box">
+          <figure class="image is-2by3">
+            {% with cover=series.first_issue_cover %}
+              {% if cover %}
+                  <img src="{{ cover.url }}" width="{{ cover.width }}" height="{{ cover.height }}" alt="{{ series }}">
+              {% else %}
+                <img src="{% static 'site/img/image-not-found.webp' %}" alt="No image for {{ series }}">
+              {% endif %}
+            {% endwith %}
+          </figure>
+        </div>
+      </div>
+      <!-- end of series image -->
+
+      <!-- series summary -->
+      <div class="column">
+        <div class="box">
+          <h1 class="title is-5">Summary</h1>
+          {% if series.desc %}
+            <p>{{ series.desc|linebreaksbr }}</p>
+          {% else %}
+            <p>No information available.</p>
+          {% endif %}
+        </div>
+      </div>
+      <!-- end of series summary -->
+
+      <!-- misc info -->
+      <div class="column is-one-fifth">
+        <div class="box">
+          <p><b>Publisher:</b> {{ series.publisher }}</p>
+          <p><b>Type:</b> {{ series.series_type }}</p>
+          {% if series.volume %}
+            <p><b>Volume:</b> {{ series.volume }}</p>
+          {% endif %}
+          <p><b>Started:</b> {{ series.year_began }}</p>
+          {% if series.year_end %}
+            <p><b>Ended:</b> {{ series.year_end }}</p>
+          {% endif %}
+          {% if series.issue_count > 0 %}
+            <p><b>Number of Issues:</b> {{ series.issue_count }}</p>
+          {% endif %}
+        </div>
+      </div>
+      <!-- end misc info -->
+    </div>
+    <!-- end of main page content -->
+  </div>
+</section>
+{% endblock %}
