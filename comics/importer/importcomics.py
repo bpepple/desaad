@@ -36,7 +36,7 @@ def get_recursive_filelist(pathlist):
     return filelist
 
 
-class ComicImporter(object):
+class ComicImporter:
     def __init__(self):
         # Configure Logging
         logging.getLogger("requests").setLevel(logging.WARNING)
@@ -52,7 +52,11 @@ class ComicImporter(object):
         # Comic tag style
         self.style = MetaDataStyle.CIX
 
-    def create_cover_date(self, day, month, year):
+        # Count of issues imported into the database
+        self.read_count = 0
+
+    @staticmethod
+    def create_cover_date(day, month, year):
         cover_date = None
         if year is not None:
             try:
@@ -69,7 +73,8 @@ class ComicImporter(object):
 
         return cover_date
 
-    def create_issue_slug(self, series_slug, issue_number):
+    @staticmethod
+    def create_issue_slug(series_slug, issue_number):
         slug = orig = slugify(series_slug + " " + issue_number)
 
         for x in itertools.count(1):
@@ -109,7 +114,7 @@ class ComicImporter(object):
             count = series.issue_count
             if count == 1:
                 series.delete()
-                print(f"Deleting series: {series}")
+                self.logger.info(f"Removing series: {series}")
             else:
                 comic.delete()
 
@@ -124,15 +129,14 @@ class ComicImporter(object):
                 md.page_count = ca.page_count
                 md.mod_ts = datetime.utcfromtimestamp(os.path.getmtime(ca.path))
                 return md
-            else:
-                return None
         else:
             return None
 
-    def get_metron_issue_id(self, md):
+    @staticmethod
+    def get_metron_issue_id(meta_data):
         mid = None
-        if md.notes is not None:
-            mid = re.search(r"\d+]", md.notes)
+        if meta_data.notes is not None:
+            mid = re.search(r"\d+]", meta_data.notes)
             if mid is not None:
                 mid = str(mid.group(0))
                 mid = mid[:-1]
@@ -151,7 +155,7 @@ class ComicImporter(object):
             pub_obj.founded = pub_data["founded"]
             # TODO: Save the publisher image
             pub_obj.save()
-            print(f"Added publisher: {pub_obj}")
+            self.logger.info(f"Added publisher: {pub_obj}")
 
         return pub_obj
 
@@ -183,7 +187,7 @@ class ComicImporter(object):
             series_obj.series_type = series_type_obj
             series_obj.publisher = pub_obj
             series_obj.save()
-            print(f"Added series: {series_obj}")
+            self.logger.info(f"Added series: {series_obj}")
 
         return series_obj
 
@@ -198,7 +202,7 @@ class ComicImporter(object):
             arc_obj.desc = arc_data["desc"]
             # TODO: Add arc image
             arc_obj.save()
-            print(f"Added arc: {arc_obj}")
+            self.logger.info(f"Added arc: {arc_obj}")
 
         return arc_obj
 
@@ -213,6 +217,7 @@ class ComicImporter(object):
             # TODO: Add birth & death dates
             # TODO: Add image
             creator_obj.save()
+            self.logger.info(f"Added Creator: {creator_obj}")
 
         return creator_obj
 
@@ -267,9 +272,9 @@ class ComicImporter(object):
             except IntegrityError as e:
                 self.logger.error(f"Attempting to create issue in database - {e}")
                 self.logger.info(f"Skipping: {md.path}")
-                return
+                return False
 
-            print(f"Created {issue_obj}")
+            self.logger.info(f"Created {issue_obj}")
 
             # Add any arcs to the issue.
             for arc in issue_data["arcs"]:
@@ -334,7 +339,6 @@ class ComicImporter(object):
         comics_path = None
 
         md_list = []
-        self.read_count = 0
         for filename in filelist:
             md = self.get_comic_metadata(filename)
             if md is not None:
