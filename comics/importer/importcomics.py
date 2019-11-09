@@ -63,24 +63,6 @@ class ComicImporter:
         self.talker = None
 
     @staticmethod
-    def create_cover_date(day, month, year):
-        cover_date = None
-        if year is not None:
-            try:
-                new_day = 1
-                new_month = 1
-                if month is not None:
-                    new_month = int(month)
-                if day is not None:
-                    new_day = int(day)
-                new_year = int(year)
-                cover_date = datetime(new_year, new_month, new_day)
-            finally:
-                pass
-
-        return cover_date
-
-    @staticmethod
     def create_issue_slug(series_slug, issue_number):
         slug = orig = slugify(series_slug + " " + issue_number)
 
@@ -217,9 +199,13 @@ class ComicImporter:
         return arc_obj
 
     def fetch_creator_image(self, image):
+        # Path and new file name to save in the database.
         img_db_path = create_creator_image_path(image)
+        # Path to save in the filesystem
         img_save_path = MEDIA_ROOT + os.sep + img_db_path
+        # Create the filesystem path if it doesn't exist.
         check_for_directories(img_save_path)
+        # Finally, let's actually fetch the image.
         self.talker.fetch_image(image, img_save_path)
 
         return img_db_path
