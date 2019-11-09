@@ -31,7 +31,7 @@
                   <figure class="image is-2by3">
                     {% with cover=series.first_issue_cover %}
                       {% if cover %}
-                        <img src="{{ series.first_issue_cover.url }}" alt="{{ series }}"
+                        <img src="{{ series.first_issue_cover.url }}" alt="{{ series }}">
                       {% else %}
                         <img src="{% static 'site/img/image-not-found.webp' %}" alt="No image for {{ series }}">
                       {% endif %}
