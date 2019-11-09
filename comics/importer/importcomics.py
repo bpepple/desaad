@@ -55,6 +55,9 @@ class ComicImporter:
         # Count of issues imported into the database
         self.read_count = 0
 
+        # Metron Talker object
+        self.talker = None
+
     @staticmethod
     def create_cover_date(day, month, year):
         cover_date = None
@@ -143,11 +146,11 @@ class ComicImporter:
 
         return mid
 
-    def get_publisher_obj(self, pub_id, talker):
+    def get_publisher_obj(self, pub_id):
         pub_obj, create = Publisher.objects.get_or_create(mid=int(pub_id))
         if create:
             # Geet the publisher data
-            pub_data = talker.fetch_publisher_data(pub_id)
+            pub_data = self.talker.fetch_publisher_data(pub_id)
 
             pub_obj.name = pub_data["name"]
             pub_obj.slug = slugify(pub_data["name"])
@@ -159,15 +162,15 @@ class ComicImporter:
 
         return pub_obj
 
-    def get_series_obj(self, series_id, talker):
+    def get_series_obj(self, series_id):
         series_obj, create = Series.objects.get_or_create(mid=int(series_id))
         if create:
             # Get the series detail
-            series_data = talker.fetch_series_data(series_id)
+            series_data = self.talker.fetch_series_data(series_id)
 
             # Get the Publisher
             pub_id = series_data["publisher"]
-            pub_obj = self.get_publisher_obj(pub_id, talker)
+            pub_obj = self.get_publisher_obj(pub_id)
 
             # Get the series type
             series_type_obj, create = SeriesType.objects.get_or_create(
@@ -191,11 +194,11 @@ class ComicImporter:
 
         return series_obj
 
-    def get_arc_obj(self, arc_id, talker):
+    def get_arc_obj(self, arc_id):
         arc_obj, create = Arc.objects.get_or_create(mid=int(arc_id))
         if create:
             # Get arc detail
-            arc_data = talker.fetch_arc_data(arc_id)
+            arc_data = self.talker.fetch_arc_data(arc_id)
 
             arc_obj.name = arc_data["name"]
             arc_obj.slug = slugify(arc_data["name"])
@@ -206,11 +209,11 @@ class ComicImporter:
 
         return arc_obj
 
-    def get_creator_obj(self, creator_id, talker):
+    def get_creator_obj(self, creator_id):
         creator_obj, create = Creator.objects.get_or_create(mid=int(creator_id))
         if create:
             # Get the creator data
-            creator_data = talker.fetch_creator_data(creator_id)
+            creator_data = self.talker.fetch_creator_data(creator_id)
 
             creator_obj.name = creator_data["name"]
             creator_obj.desc = creator_data["desc"]
@@ -221,7 +224,7 @@ class ComicImporter:
 
         return creator_obj
 
-    def add_comic_from_metadata(self, talker, md):
+    def add_comic_from_metadata(self, md):
         if not md.isEmpty:
             # Retrieve the Metron issue id from the comic file's tagged info
             mid = self.get_metron_issue_id(md)
@@ -231,13 +234,13 @@ class ComicImporter:
                 )
 
             # Let's get the issue data
-            issue_data = talker.fetch_issue_data(mid)
+            issue_data = self.talker.fetch_issue_data(mid)
             if issue_data is None:
                 return False
 
             # Now get the series info.
             series_id = issue_data["series"]["id"]
-            series_obj = self.get_series_obj(series_id, talker)
+            series_obj = self.get_series_obj(series_id)
 
             # Now let's create the issue
             current_timezone = timezone.get_current_timezone()
@@ -247,7 +250,7 @@ class ComicImporter:
             img_db_path = create_issues_image_path(issue_data["image"])
             img_save_path = MEDIA_ROOT + os.sep + img_db_path
             check_for_directories(img_save_path)
-            talker.fetch_image(issue_data["image"], img_save_path)
+            self.talker.fetch_image(issue_data["image"], img_save_path)
 
             # TODO: Use the issue_data["cover_date"] for cover date instead of the metadata from the file.
             cover_date = self.create_cover_date(md.day, md.month, md.year)
@@ -279,7 +282,7 @@ class ComicImporter:
             # Add any arcs to the issue.
             for arc in issue_data["arcs"]:
                 if arc:
-                    arc_obj = self.get_arc_obj(arc["id"], talker)
+                    arc_obj = self.get_arc_obj(arc["id"])
                     if arc_obj:
                         issue_obj.arcs.add(arc_obj)
 
@@ -287,7 +290,7 @@ class ComicImporter:
             for credit in issue_data["credits"]:
                 if credit:
                     creator_id = credit["id"]
-                    creator_obj = self.get_creator_obj(creator_id, talker)
+                    creator_obj = self.get_creator_obj(creator_id)
                     credit_obj, _ = Credits.objects.get_or_create(
                         issue=issue_obj, creator=creator_obj
                     )
@@ -303,9 +306,9 @@ class ComicImporter:
                     self.logger.info(f"Added credit for {creator_obj} to {issue_obj}")
 
     def commit_metadata_list(self, md_list):
-        talker = MetronTalker(self.auth)
+        self.talker = MetronTalker(self.auth)
         for md in md_list:
-            self.add_comic_from_metadata(talker, md)
+            self.add_comic_from_metadata(md)
 
     def import_comics(self):
         filelist = get_recursive_filelist(self.directory_path)
