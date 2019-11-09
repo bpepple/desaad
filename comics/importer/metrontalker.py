@@ -1,5 +1,6 @@
 import json
 import platform
+import time
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
@@ -27,44 +28,45 @@ class MetronTalker:
 
         try:
             content = urlopen(request)
-        except HTTPError as e:
+        except HTTPError as h_error:
             # TODO: Look into handling throttling better, but for now let's use this.
-            if e.code == 429:
+            if h_error.code == 429:
                 print("Exceeded api rate limit. Sleeping for 30 seconds...")
                 time.sleep(30)
-                return self.fetchResponse(url)
+                return self.fetch_response(url)
             raise
 
         resp = json.loads(content.read().decode("utf-8"))
 
         return resp
 
-    def fetch_image(self, url, file_name):
+    @staticmethod
+    def fetch_image(url, file_name):
         with urlopen(url) as img:
-            with open(file_name, "wb") as f:
-                f.write(img.read())
+            with open(file_name, "wb") as m_image:
+                m_image.write(img.read())
 
-    def fetch_publisher_data(self, id):
-        url = self.baseurl + f"/publisher/{id}/?format=json"
+    def fetch_publisher_data(self, m_id):
+        url = self.baseurl + f"/publisher/{m_id}/?format=json"
         resp = self.fetch_response(url)
         return resp
 
-    def fetch_series_data(self, id):
-        url = self.baseurl + f"/series/{id}/?format=json"
+    def fetch_series_data(self, m_id):
+        url = self.baseurl + f"/series/{m_id}/?format=json"
         resp = self.fetch_response(url)
         return resp
 
-    def fetch_arc_data(self, id):
-        url = self.baseurl + f"/arc/{id}/?format=json"
+    def fetch_arc_data(self, m_id):
+        url = self.baseurl + f"/arc/{m_id}/?format=json"
         resp = self.fetch_response(url)
         return resp
 
-    def fetch_issue_data(self, id):
-        url = self.baseurl + f"/issue/{id}/?format=json"
+    def fetch_issue_data(self, m_id):
+        url = self.baseurl + f"/issue/{m_id}/?format=json"
         resp = self.fetch_response(url)
         return resp
 
-    def fetch_creator_data(self, id):
-        url = self.baseurl + f"/creator/{id}/?format=json"
+    def fetch_creator_data(self, m_id):
+        url = self.baseurl + f"/creator/{m_id}/?format=json"
         resp = self.fetch_response(url)
         return resp
