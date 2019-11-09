@@ -127,11 +127,11 @@ class ComicImporter:
             self.logger.info(f"Reading in {self.read_count} {path}")
             self.read_count += 1
             if ca.hasMetadata(self.style):
-                md = ca.readMetadata(self.style)
-                md.path = ca.path
-                md.page_count = ca.page_count
-                md.mod_ts = datetime.utcfromtimestamp(os.path.getmtime(ca.path))
-                return md
+                meta_data = ca.readMetadata(self.style)
+                meta_data.path = ca.path
+                meta_data.page_count = ca.page_count
+                meta_data.mod_ts = datetime.utcfromtimestamp(os.path.getmtime(ca.path))
+                return meta_data
         else:
             return None
 
@@ -224,13 +224,13 @@ class ComicImporter:
 
         return creator_obj
 
-    def add_comic_from_metadata(self, md):
-        if not md.isEmpty:
+    def add_comic_from_metadata(self, meta_data):
+        if not meta_data.isEmpty:
             # Retrieve the Metron issue id from the comic file's tagged info
-            mid = self.get_metron_issue_id(md)
+            mid = self.get_metron_issue_id(meta_data)
             if not mid:
                 self.logger.info(
-                    f"No Metron ID for: {md.series} #{md.number}... skipping"
+                    f"No Metron ID for: {meta_data.series} #{meta_data.number}... skipping"
                 )
 
             # Let's get the issue data
@@ -244,7 +244,7 @@ class ComicImporter:
 
             # Now let's create the issue
             current_timezone = timezone.get_current_timezone()
-            tz = timezone.make_aware(md.mod_ts, current_timezone)
+            tz = timezone.make_aware(meta_data.mod_ts, current_timezone)
 
             # Fetch the issue image
             img_db_path = create_issues_image_path(issue_data["image"])
@@ -253,28 +253,28 @@ class ComicImporter:
             self.talker.fetch_image(issue_data["image"], img_save_path)
 
             # TODO: Use the issue_data["cover_date"] for cover date instead of the metadata from the file.
-            cover_date = self.create_cover_date(md.day, md.month, md.year)
+            cover_date = self.create_cover_date(meta_data.day, meta_data.month, meta_data.year)
             # This variable is *only* used for the slug.
-            issue_number = IssueString(md.issue).asString(pad=3)
+            issue_number = IssueString(meta_data.issue).asString(pad=3)
             issue_slug = self.create_issue_slug(series_obj.slug, issue_number)
             # TODO: Create the store_date from the issue_data["store_date"]
             # TODO: Add title array to issue
             try:
                 issue_obj = Issue.objects.create(
-                    file=md.path,
+                    file=meta_data.path,
                     mid=int(issue_data["id"]),
                     number=issue_data["number"],
                     slug=issue_slug,
                     cover_date=cover_date,
                     desc=issue_data["desc"],
                     image=img_db_path,
-                    page_count=md.page_count,
+                    page_count=meta_data.page_count,
                     mod_ts=tz,
                     series=series_obj,
                 )
             except IntegrityError as e:
                 self.logger.error(f"Attempting to create issue in database - {e}")
-                self.logger.info(f"Skipping: {md.path}")
+                self.logger.info(f"Skipping: {meta_data.path}")
                 return False
 
             self.logger.info(f"Created {issue_obj}")
@@ -307,8 +307,8 @@ class ComicImporter:
 
     def commit_metadata_list(self, md_list):
         self.talker = MetronTalker(self.auth)
-        for md in md_list:
-            self.add_comic_from_metadata(md)
+        for meta_data in md_list:
+            self.add_comic_from_metadata(meta_data)
 
     def import_comics(self):
         filelist = get_recursive_filelist(self.directory_path)
@@ -343,9 +343,9 @@ class ComicImporter:
 
         md_list = []
         for filename in filelist:
-            md = self.get_comic_metadata(filename)
-            if md is not None:
-                md_list.append(md)
+            meta_data = self.get_comic_metadata(filename)
+            if meta_data is not None:
+                md_list.append(meta_data)
 
             if self.read_count % 100 == 0 and self.read_count != 0:
                 if len(md_list) > 0:
