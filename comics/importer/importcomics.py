@@ -216,6 +216,14 @@ class ComicImporter:
 
         return arc_obj
 
+    def fetch_creator_image(self, image):
+        img_db_path = create_creator_image_path(image)
+        img_save_path = MEDIA_ROOT + os.sep + img_db_path
+        check_for_directories(img_save_path)
+        self.talker.fetch_image(image, img_save_path)
+
+        return img_db_path
+
     def get_creator_obj(self, creator_id):
         creator_obj, create = Creator.objects.get_or_create(mid=int(creator_id))
         if create:
@@ -229,11 +237,7 @@ class ComicImporter:
 
             # If there is a creator image, fetch it.
             if creator_data["image"] is not None:
-                img_db_path = create_creator_image_path(creator_data["image"])
-                img_save_path = MEDIA_ROOT + os.sep + img_db_path
-                check_for_directories(img_save_path)
-                self.talker.fetch_image(creator_data["image"], img_save_path)
-                creator_obj.image = img_db_path
+                creator_obj.image = self.fetch_creator_image(creator_data["image"])
 
             # Convert date of birth to datetime if present
             if creator_data["birth"] is not None:
@@ -247,6 +251,14 @@ class ComicImporter:
             self.logger.info(f"Added Creator: {creator_obj}")
 
         return creator_obj
+
+    def fetch_issue_image(self, image):
+        img_db_path = create_issues_image_path(image)
+        img_save_path = MEDIA_ROOT + os.sep + img_db_path
+        check_for_directories(img_save_path)
+        self.talker.fetch_image(image, img_save_path)
+
+        return img_db_path
 
     def add_comic_from_metadata(self, meta_data):
         if not meta_data.isEmpty:
@@ -270,12 +282,6 @@ class ComicImporter:
             current_timezone = timezone.get_current_timezone()
             t_zone = timezone.make_aware(meta_data.mod_ts, current_timezone)
 
-            # Fetch the issue image
-            img_db_path = create_issues_image_path(issue_data["image"])
-            img_save_path = MEDIA_ROOT + os.sep + img_db_path
-            check_for_directories(img_save_path)
-            self.talker.fetch_image(issue_data["image"], img_save_path)
-
             if issue_data["cover_date"] is not None:
                 cover_date = datetime.strptime(issue_data["cover_date"], "%Y-%m-%d")
 
@@ -291,7 +297,6 @@ class ComicImporter:
                     slug=issue_slug,
                     cover_date=cover_date,
                     desc=issue_data["desc"],
-                    image=img_db_path,
                     page_count=meta_data.page_count,
                     mod_ts=t_zone,
                     series=series_obj,
@@ -302,6 +307,11 @@ class ComicImporter:
                 return False
 
             self.logger.info(f"Created {issue_obj}")
+
+            # Fetch the issue image
+            if issue_data["image"] is not None:
+                issue_obj.image = self.fetch_issue_image(issue_data["image"])
+                issue_obj.save()
 
             # If there is a store date, let's add it to the issue.
             if issue_data["store_date"] is not None:
