@@ -10,9 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
+import logging.config
 import os
 
 from decouple import config
+from django.utils.log import DEFAULT_LOGGING
+
+LOGGING_CONFIG = None
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -127,6 +131,36 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# Logging Config
+logging.config.dictConfig(
+    {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "console": {
+                # exact format is not important, this is the minimum information
+                "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+            },
+            "django.server": DEFAULT_LOGGING["formatters"]["django.server"],
+        },
+        "handlers": {
+            "console": {"class": "logging.StreamHandler", "formatter": "console"},
+            "django.server": DEFAULT_LOGGING["handlers"]["django.server"],
+        },
+        "loggers": {
+            "": {"level": "WARNING", "handlers": ["console"]},
+            "desaad": {
+                "level": "INFO",
+                "handlers": ["console"],
+                # required to avoid double logging with root logger
+                "propagate": False,
+            },
+            "django.server": DEFAULT_LOGGING["loggers"]["django.server"],
+        },
+    }
+)
+
 
 if DEBUG:
     INTERNAL_IPS = ("127.0.0.1", "localhost")
