@@ -1,4 +1,5 @@
 {% extends parent_template|default:"base.html" %}
+{% load thumbnail %}
 {% load static %}
 
 {% block title %}Issues{% endblock title %}
@@ -29,7 +30,13 @@
                 </div>
                 <div class="card-image">
                   <figure class="image is-2by3">
-                    <img src="{{ issue.image.url }}" alt="{{ issue }}"
+                    {% if issue.image %}
+                      {% thumbnail issue.image "320x480" crop="center" format="WEBP" as im %}
+                        <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="Cover for {{ issue }}">
+                      {% endthumbnail %}
+                    {% else %}
+                      <img src="{% static 'site/img/image-not-found.webp' %}" alt="No image for {{ issue }}">
+                    {% endif %}
                   </figure>
                 </div>
                 <div class="card-content">

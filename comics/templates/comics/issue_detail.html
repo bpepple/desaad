@@ -1,4 +1,5 @@
 {% extends parent_template|default:"base.html" %}
+{% load thumbnail %}
 {% load static %}
 
 {% block title %}{{ issue }}{% endblock title %}
@@ -62,7 +63,11 @@
       <div class="box">
         <figure class="image is-2by3">
           {% if issue.image %}
-            <img src="{{ issue.image.url }}" alt = "{{ issue }}">
+            {% thumbnail issue.image "320x480" crop="center" format="WEBP" as im %}
+            <a class="modal-button" data-target="modal-bis">
+              <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt = "Cover for {{ issue }}">
+            </a>
+            {% endthumbnail %}
           {% else %}
             <img src="{% static 'site/img/image-not-found.webp' %}" alt="No image for {{ issue }}">
           {% endif %}
@@ -109,11 +114,13 @@
                       <article class="media">
                         <div class="media-left">
                           <figure class="image is-64x64">
-                          {% if credit.creator.image %}
-                            <img class="is-rounded" src="{{ credit.creator.image.url }}"  alt="{{ credit.creator }}">
-                          {% else %}
-                            <img class="is-rounded" src="{% static 'site/img/creator-not-found.webp' %}" alt="No image for {{ credit.creator }}">
-                          {% endif %}
+                            {% if credit.creator.image %}
+                              {% thumbnail credit.creator.image "64x64" crop="center" format="WEBP" as im %}
+                                <img class="is-rounded" src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"  alt="{{ credit.creator }}">
+                              {% endthumbnail %}
+                            {% else %}
+                              <img class="is-rounded" src="{% static 'site/img/creator-not-found.webp' %}" alt="No image for {{ credit.creator }}">
+                            {% endif %}
                           </figure>
                         </div>
                         <div class="media-content">

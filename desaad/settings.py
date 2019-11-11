@@ -108,6 +108,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# sorl-thumbnail settings
+THUMBNAIL_KVSTORE = "sorl.thumbnail.kvstores.redis_kvstore.KVStore"
+THUMBNAIL_REDIS_HOST = "localhost"  # default
+THUMBNAIL_REDIS_PORT = 6379  # default
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
