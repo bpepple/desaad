@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b7493958c176b78dc7710ff6e832396e2b798dbc66239364cdfaf7090caf29f9"
+            "sha256": "83c117fe989ca67c4b65db9a041eafce370e58f1fc4c80f43e5f4b5d19ccbd5c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -26,7 +26,8 @@
         },
         "natsort": {
             "hashes": [
-                "sha256:4fe33a96eec07e92736c5374db776a2fa489a4116ab4be90d3fc3a95c45d0c8c"
+                "sha256:4fe33a96eec07e92736c5374db776a2fa489a4116ab4be90d3fc3a95c45d0c8c",
+                "sha256:564ba971abe6e9e6d85654fad3d316da0c8f1667967472418cae407a2454a169"
             ],
             "index": "pypi",
             "version": "==6.1.0"
@@ -69,10 +70,12 @@
         },
         "psycopg2": {
             "hashes": [
+                "sha256:4212ca404c4445dc5746c0d68db27d2cbfb87b523fe233dc84ecd24062e35677",
                 "sha256:47fc642bf6f427805daf52d6e52619fe0637648fe27017062d898f3bf891419d",
                 "sha256:72772181d9bad1fa349792a1e7384dde56742c14af2b9986013eb94a240f005b",
                 "sha256:8396be6e5ff844282d4d49b81631772f80dabae5658d432202faf101f5283b7c",
                 "sha256:893c11064b347b24ecdd277a094413e1954f8a4e8cdaf7ffbe7ca3db87c103f0",
+                "sha256:92a07dfd4d7c325dd177548c4134052d4842222833576c8391aab6f74038fc3f",
                 "sha256:965c4c93e33e6984d8031f74e51227bd755376a9df6993774fd5b6fb3288b1f4",
                 "sha256:9ab75e0b2820880ae24b7136c4d230383e07db014456a476d096591172569c38",
                 "sha256:b0845e3bdd4aa18dc2f9b6fb78fbd3d9d371ad167fd6d1b7ad01c0a6cdad4fc6",
@@ -104,6 +107,14 @@
             ],
             "index": "pypi",
             "version": "==2.2.1"
+        },
+        "redis": {
+            "hashes": [
+                "sha256:3613daad9ce5951e426f460deddd5caf469e08a3af633e9578fc77d362becf62",
+                "sha256:8d0fc278d3f5e1249967cba2eb4a5632d19e45ce5c09442b8422d15ee2c22cc2"
+            ],
+            "index": "pypi",
+            "version": "==3.3.11"
         },
         "sorl-thumbnail": {
             "hashes": [

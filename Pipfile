@@ -16,6 +16,7 @@ pillow = "*"
 natsort = "*"
 ratelimit = "*"
 python-decouple = "*"
+redis = "*"
 
 [requires]
 python_version = "3.6"
