@@ -1,3 +1,4 @@
+"""A python class to manage communication with Metron's REST API"""
 import json
 import platform
 import time
@@ -10,6 +11,7 @@ ONE_MINUTE = 60
 
 
 class MetronTalker:
+    """Python class to communicate with Metron's REST API"""
     def __init__(self, auth):
         self.baseurl = "https://metron.cloud/api"
         self.auth_str = f"Basic {auth.decode('utf-8')}"
