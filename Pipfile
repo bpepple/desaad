@@ -18,6 +18,7 @@ natsort = "*"
 ratelimit = "*"
 python-decouple = "*"
 redis = "*"
+django-simple-bulma = "*"
 
 [requires]
 python_version = "3.6"
