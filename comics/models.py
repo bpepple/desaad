@@ -28,6 +28,10 @@ class Creator(models.Model):
     image = ImageField(upload_to="creator/%Y/%m/%d/", blank=True)
     alias = ArrayField(models.CharField(max_length=100), null=True, blank=True)
 
+    @property
+    def issue_count(self):
+        return self.credits_set.all().count()
+
     def __str__(self):
         return self.name
 
