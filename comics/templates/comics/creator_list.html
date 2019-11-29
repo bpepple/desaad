@@ -74,7 +74,7 @@
                 <footer class="card-footer">
                   {% with count=creator.issue_count %}
                     {% if count %}
-                      <a href="" class="card-footer-item">
+                      <a href="{% url 'creator:issue' creator.slug %}" class="card-footer-item">
                         {{ count }} Issue{{ count|pluralize }}
                       </a>
                     {% else %}
