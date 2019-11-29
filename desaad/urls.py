@@ -18,11 +18,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from comics.urls import creator as creator_urls
 from comics.urls import issue as issue_urls
 from comics.urls import series as series_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("creator/", include(creator_urls)),
     path("issue/", include(issue_urls)),
     path("series/", include(series_urls)),
 ]

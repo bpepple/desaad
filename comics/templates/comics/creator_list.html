@@ -1,0 +1,103 @@
+{% extends parent_template|default:"base.html" %}
+{% load thumbnail %}
+{% load static %}
+
+{% block title %}Creators{% endblock title %}
+
+{% block content %}
+
+  {% if creator_list %}
+    <!-- hero -->
+    <section class="hero">
+      <div class="hero-body">
+        <div class="container has-text-centered">
+          <h1 class="title is-3">Creator{{ creator_list.count|pluralize }} List</h1>
+        </div>
+      </div>
+    </section>
+    <!-- end hero -->
+
+    <!-- creator list -->
+    <section>
+      <div class="container">
+        <!-- navigation -->
+        <nav class="level">
+          <!-- search box -->
+          <div class="level-left">
+            <div class="level-item">
+              <p class="subtitle is-5">
+                <strong>{{ page_obj.paginator.count }}</strong> Creator{{ page_obj.paginator.count|pluralize }}
+              </p>
+            </div>
+            <div class="level-item">
+              <form action="{% url 'creator:search' %}" method="get" accept-charset="utf-8">
+                <div class="field has-addons">
+                  <p class="control">
+                    <input class="input" name="q" type="search" placeholder="Find a creator">
+                  </p>
+                  <p class="control">
+                    <button class="button">Search</button>
+                  </p>
+                </div>
+              </form>
+            </div>
+          </div>
+          <!-- end search box -->
+        </nav>
+        <!-- end navigation -->
+
+        <!-- creator columns -->
+        <div class="columns is-multiline">
+          {% for creator in creator_list %}
+            <div class="column is-one-quarter has-text-centered">
+              <!-- card-->
+              <div class="card">
+                <!-- card header -->
+                <header class="card-header">
+                  <p class="card-header-title is-centered">{{ creator }}</p>
+                </header>
+                <!-- end card header -->
+                <!-- card image -->
+                <div class="card-image">
+                  <figure class="image is-square">
+                    {% if creator.image %}
+                      {% thumbnail creator.image "256x256" crop="center" format="WEBP" as im %}
+                        <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt = "{{ creator.name }}">
+                      {% endthumbnail %}
+                    {% else %}
+                      <img src="{% static 'site/img/creator-not-found.webp' %}" alt="No image for {{ creator.name }}">
+                    {% endif %}
+                  </figure>
+                </div>
+                <!-- end card image -->
+                <!-- card footer -->
+                <footer class="card-footer">
+                  {% with count=creator.issue_count %}
+                    {% if count %}
+                      <a href="" class="card-footer-item">
+                        {{ count }} Issue{{ count|pluralize }}
+                      </a>
+                    {% else %}
+                      <p class="card-footer-item">0 Issues</p>
+                    {% endif %}
+                  {% endwith %}
+                  <a href="{% url 'creator:detail' creator.slug %}" class="card-footer-item">Info</a>
+                </footer>
+                <!-- end card footer -->
+              </div>
+              <!-- end card -->
+            </div>
+          {% endfor %}
+        </div>
+        <!-- end creator columns -->
+      </div>
+    </section>
+    <!-- end creator list -->
+  {% else %}
+    <section>
+      <div class="container">
+        <p>No Creators currently available.</p>
+      </div>
+    </section>
+  {% endif %}
+{% endblock %}
