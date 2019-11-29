@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "sorl.thumbnail",
+    "django_simple_bulma",
     "comics",
 ]
 
@@ -112,6 +113,20 @@ AUTH_PASSWORD_VALIDATORS = [
 THUMBNAIL_KVSTORE = "sorl.thumbnail.kvstores.redis_kvstore.KVStore"
 THUMBNAIL_REDIS_HOST = "localhost"  # default
 THUMBNAIL_REDIS_PORT = 6379  # default
+
+# django-simple-bulma settings
+STATICFILES_FINDERS = [
+    # First add the two default Finders, since this will overwrite the default.
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    # Now add our custom SimpleBulma one.
+    "django_simple_bulma.finders.SimpleBulmaFinder",
+]
+
+# Custom settings for django-simple-bulma
+BULMA_SETTINGS = {
+    "extensions": ["bulma-navbar-burger"],
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
