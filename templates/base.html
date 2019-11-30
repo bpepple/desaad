@@ -11,6 +11,14 @@
     {% include "navbar.html" %}
 
     {% block content %}{% endblock %}
+  
+    {% if is_paginated %}
+    <section class="section">
+      <div class="container">
+        {% block pagination %}{% endblock %}
+      </div>
+    </section>
+    {% endif %}
 
     {% block js %}{% endblock %}
   </body>
