@@ -62,7 +62,7 @@ def create_issues_image_path(path):
     return path
 
 
-def create_publishers_image_path(path):
+def create_publisher_image_path(path):
     file_name = new_image_name(path)
     date_str = create_date_path()
     path = "publishers" + date_str + file_name
