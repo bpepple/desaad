@@ -1,4 +1,8 @@
+import operator
+from functools import reduce
+
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView, ListView
 
@@ -74,3 +78,16 @@ class SeriesDetail(DetailView):
             "previous_series": previous_series,
         }
         return context
+
+
+class SearchSeriesList(SeriesList):
+    def get_queryset(self):
+        result = super(SearchSeriesList, self).get_queryset()
+        query = self.request.GET.get("q")
+        if query:
+            query_list = query.split()
+            result = result.filter(
+                reduce(operator.and_, (Q(name__icontains=q) for q in query_list))
+            )
+
+        return result
