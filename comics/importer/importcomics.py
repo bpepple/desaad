@@ -14,8 +14,9 @@ from comics.comicapi.issuestring import IssueString
 from comics.importer.metrontalker import MetronTalker
 from comics.importer.utils import (
     check_for_directories,
-    create_issues_image_path,
     create_creator_image_path,
+    create_issues_image_path,
+    create_publisher_image_path,
 )
 from comics.models import (
     Arc,
@@ -158,6 +159,18 @@ class ComicImporter:
 
         return mid
 
+    def fetch_publisher_image(self, image):
+        # Path and new file name to save in the database.
+        img_db_path = create_publisher_image_path(image)
+        # Path to save in the filesystem
+        img_save_path = MEDIA_ROOT + os.sep + img_db_path
+        # Create the filesystem path if it doesn't exist.
+        check_for_directories(img_save_path)
+        # Finally, let's actually fetch the image.
+        self.talker.fetch_image(image, img_save_path)
+
+        return img_db_path
+
     def get_publisher_obj(self, pub_id):
         pub_obj, create = Publisher.objects.get_or_create(mid=int(pub_id))
         if create:
@@ -168,7 +181,11 @@ class ComicImporter:
             pub_obj.slug = slugify(pub_data["name"])
             pub_obj.desc = pub_data["desc"]
             pub_obj.founded = pub_data["founded"]
-            # TODO: Save the publisher image
+
+            # If there is a publisher image, fetch it.
+            if pub_data["image"] is not None:
+                pub_obj.image = self.fetch_publisher_image(pub_data["image"])
+
             pub_obj.save()
             self.logger.info(f"Added publisher: {pub_obj}")
 
