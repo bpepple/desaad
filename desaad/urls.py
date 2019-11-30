@@ -20,6 +20,7 @@ from django.urls import include, path
 
 from comics.urls import creator as creator_urls
 from comics.urls import issue as issue_urls
+from comics.urls import publisher as publisher_urls
 from comics.urls import series as series_urls
 
 urlpatterns = [
@@ -27,6 +28,7 @@ urlpatterns = [
     path("creator/", include(creator_urls)),
     path("issue/", include(issue_urls)),
     path("series/", include(series_urls)),
+    path("publisher/", include(publisher_urls)),
 ]
 
 if settings.DEBUG:
