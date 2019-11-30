@@ -19,42 +19,58 @@
   <!-- series list -->
   <section>
     <div class="container">
-      <!-- main column -->
-      <div class="column">
-        <div class="columns is-multiline">
-          {% for series in series_list %}
-            <div class="column is-one-quarter">
-              <div class="card">
-                <div class="card-header">
-                  <p class="card-header-title is-centered">{{ series }}</p>
-                </div>
-                <div class="card-image">
-                  <figure class="image is-2by3">
-                    {% with cover=series.first_issue_cover %}
-                      {% if cover %}
-                        {% thumbnail cover "320x480" crop="center" format="WEBP" as im %}
-                          <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="Cover for {{ series }}">
-                        {% endthumbnail %}
-                      {% else %}
-                        <img src="{% static 'site/img/image-not-found.webp' %}" alt="No image for {{ series }}">
-                      {% endif %}
-                    {% endwith %}
-                  </figure>
-                </div>
-                <footer class="card-footer">
-                  {% with count=series.issue_count %}
-                    {% if count %}
-                      <p class="card-footer-item">{{ series.issue_count }} issue{{ count|pluralize }}</p>
+      <!-- navigation -->
+      <nav class="level">
+        <!-- search box -->
+        <div class="level-left">
+          <div class="level-item">
+            <p class="subtitle is-5">
+              {% if page_obj.paginator %}
+                <strong>{{ page_obj.paginator.count }}</strong> Series
+              {% else %}
+                <strong>{{ series_list.count }}</strong> Series
+              {% endif %}
+            </p>
+          </div>
+        </div>
+        <!-- search box -->
+      </nav>
+      <!-- end navigation -->
+
+      <!-- series column -->
+      <div class="columns is-multiline">
+        {% for series in series_list %}
+          <div class="column is-one-quarter">
+            <div class="card">
+              <div class="card-header">
+                <p class="card-header-title is-centered">{{ series }}</p>
+              </div>
+              <div class="card-image">
+                <figure class="image is-2by3">
+                  {% with cover=series.first_issue_cover %}
+                    {% if cover %}
+                      {% thumbnail cover "320x480" crop="center" format="WEBP" as im %}
+                        <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="Cover for {{ series }}">
+                      {% endthumbnail %}
+                    {% else %}
+                      <img src="{% static 'site/img/image-not-found.webp' %}" alt="No image for {{ series }}">
                     {% endif %}
                   {% endwith %}
-                  <a href="{% url 'series:detail' series.slug %}" class="card-footer-item">Info</a>
-                </footer>
+                </figure>
               </div>
+              <footer class="card-footer">
+                {% with count=series.issue_count %}
+                  {% if count %}
+                    <p class="card-footer-item">{{ series.issue_count }} issue{{ count|pluralize }}</p>
+                  {% endif %}
+                {% endwith %}
+                <a href="{% url 'series:detail' series.slug %}" class="card-footer-item">Info</a>
+              </footer>
             </div>
-          {% endfor %}
-        </div>
+          </div>
+        {% endfor %}
       </div>
-      <!-- end main column-->
+      <!-- end series column-->
     </div>
   </section>
   <!-- end series list -->
