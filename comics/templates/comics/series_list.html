@@ -73,7 +73,9 @@
               <footer class="card-footer">
                 {% with count=series.issue_count %}
                   {% if count %}
-                    <p class="card-footer-item">{{ series.issue_count }} issue{{ count|pluralize }}</p>
+                  <a href="{% url 'series:issue' series.slug %}" class="card-footer-item">
+                    {{ series.issue_count }} issue{{ count|pluralize }}
+                  </a>
                   {% endif %}
                 {% endwith %}
                 <a href="{% url 'series:detail' series.slug %}" class="card-footer-item">Info</a>
