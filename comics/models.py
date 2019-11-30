@@ -48,6 +48,10 @@ class Publisher(models.Model):
     wikipedia = models.CharField("Wikipedia Slug", max_length=255, blank=True)
     image = ImageField("Logo", upload_to="publisher/%Y/%m/%d/", blank=True)
 
+    @property
+    def series_count(self):
+        return self.series_set.all().count()
+
     def __str__(self):
         return self.name
 
