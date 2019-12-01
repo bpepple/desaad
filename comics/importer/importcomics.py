@@ -51,8 +51,8 @@ class ComicImporter:
         self.directory_path = "/home/bpepple/Documents/Comics"
 
         # Metron creditials
-        auth = f"{METRON_USER}:{METRON_PASS}"
-        self.auth = standard_b64encode(auth.encode("utf-8"))
+        creditials = f"{METRON_USER}:{METRON_PASS}"
+        self.auth = standard_b64encode(creditials.encode("utf-8"))
 
         # Comic tag style
         self.style = MetaDataStyle.CIX
