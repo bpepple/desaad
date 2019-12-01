@@ -51,17 +51,17 @@ class IssueListViewTest(TestCase):
         self.assertEqual(resp.status_code, HTML_OK_CODE)
         self.assertTemplateUsed(resp, "comics/issue_list.html")
 
-    # def test_pagination_is_thirty(self):
-    #     resp = self.client.get(reverse("issue:list"))
-    #     self.assertEqual(resp.status_code, HTML_OK_CODE)
-    #     self.assertTrue("is_paginated" in resp.context)
-    #     self.assertTrue(resp.context["is_paginated"] == True)
-    #     self.assertTrue(len(resp.context["issue_list"]) == PAGINATE_DEFAULT_VAL)
+    def test_pagination_is_twenty_eight(self):
+        resp = self.client.get(reverse("issue:list"))
+        self.assertEqual(resp.status_code, HTML_OK_CODE)
+        self.assertTrue("is_paginated" in resp.context)
+        self.assertTrue(resp.context["is_paginated"])
+        self.assertTrue(len(resp.context["issue_list"]) == PAGINATE_DEFAULT_VAL)
 
-    # def test_lists_second_page(self):
-    #     # Get second page and confirm it has (exactly) remaining 7 items
-    #     resp = self.client.get(reverse("issue:list") + "?page=2")
-    #     self.assertEqual(resp.status_code, HTML_OK_CODE)
-    #     self.assertTrue("is_paginated" in resp.context)
-    #     self.assertTrue(resp.context["is_paginated"] == True)
-    #     self.assertTrue(len(resp.context["issue_list"]) == PAGINATE_DIFF_VAL)
+    def test_lists_second_page(self):
+        # Get second page and confirm it has (exactly) remaining 7 items
+        resp = self.client.get(reverse("issue:list") + "?page=2")
+        self.assertEqual(resp.status_code, HTML_OK_CODE)
+        self.assertTrue("is_paginated" in resp.context)
+        self.assertTrue(resp.context["is_paginated"])
+        self.assertTrue(len(resp.context["issue_list"]) == PAGINATE_DIFF_VAL)
