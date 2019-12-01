@@ -24,7 +24,7 @@ class SeriesSearchViewsTest(TestCase):
                 year_began=2018,
                 publisher=cls.publisher,
                 volume=f"{pub_num}",
-                series_type=series_type
+                series_type=series_type,
             )
 
     def test_view_url_exists_at_desired_location(self):
@@ -70,7 +70,7 @@ class SeriesListViewTest(TestCase):
                 year_began=2018,
                 publisher=publisher,
                 volume=f"{pub_num}",
-                series_type=series_type
+                series_type=series_type,
             )
 
     def test_view_url_exists_at_desired_location(self):
@@ -100,3 +100,24 @@ class SeriesListViewTest(TestCase):
         self.assertTrue("is_paginated" in resp.context)
         self.assertTrue(resp.context["is_paginated"])
         self.assertTrue(len(resp.context["series_list"]) == PAGINATE_DIFF_VAL)
+
+
+class SeriesDetailViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        pub = Publisher.objects.create(mid=1, name="DC Comics", slug="dc-comics")
+
+        cls.series = Series.objects.create(
+            mid=5, publisher=pub, name="Superman", slug="superman"
+        )
+
+    def test_view_url_accessible_by_name(self):
+        url = reverse("series:detail", args=(self.series.slug,))
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, HTML_OK_CODE)
+
+    def test_view_uses_correct_template(self):
+        url = reverse("series:detail", args=(self.series.slug,))
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, HTML_OK_CODE)
+        self.assertTemplateUsed(resp, "comics/series_detail.html")
