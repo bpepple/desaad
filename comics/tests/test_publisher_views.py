@@ -86,3 +86,22 @@ class PublisherListViewTest(TestCase):
         self.assertTrue("is_paginated" in resp.context)
         self.assertTrue(resp.context["is_paginated"])
         self.assertTrue(len(resp.context["publisher_list"]) == PAGINATE_DIFF_VAL)
+
+
+class PublisherDetailViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.publisher = Publisher.objects.create(
+            mid=1, name="DC Comics", slug="dc-comics"
+        )
+
+    def test_view_url_accessible_by_name(self):
+        url = reverse("publisher:detail", args=(self.publisher.slug,))
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, HTML_OK_CODE)
+
+    def test_view_uses_correct_template(self):
+        url = reverse("publisher:detail", args=(self.publisher.slug,))
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, HTML_OK_CODE)
+        self.assertTemplateUsed(resp, "comics/publisher_detail.html")
