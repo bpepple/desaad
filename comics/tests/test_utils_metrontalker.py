@@ -1,5 +1,5 @@
 from base64 import standard_b64encode
-from unittest import TestCase, main
+from unittest import TestCase
 from unittest.mock import patch
 
 from comics.importer.metrontalker import MetronTalker
@@ -65,8 +65,8 @@ class TestMetronTalker(TestCase):
         }
 
     @patch("comics.importer.metrontalker.MetronTalker.fetch_response")
-    def test_fetch_issue_by_id(self, MockFetch):
-        MockFetch.return_value = self.resp
+    def test_fetch_issue_by_id(self, mock_fetch):
+        mock_fetch.return_value = self.resp
         talker = MetronTalker(self.base64string)
         resp = talker.fetch_issue_data("1")
         self.assertIsNotNone(resp)
