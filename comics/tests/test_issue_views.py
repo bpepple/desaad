@@ -65,3 +65,37 @@ class IssueListViewTest(TestCase):
         self.assertTrue("is_paginated" in resp.context)
         self.assertTrue(resp.context["is_paginated"])
         self.assertTrue(len(resp.context["issue_list"]) == PAGINATE_DIFF_VAL)
+
+
+class IssueDetailViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        issue_date = timezone.now().date()
+        mod_time = timezone.now()
+
+        publisher = Publisher.objects.create(mid=1, name="DC Comics", slug="dc-comics")
+
+        series = Series.objects.create(
+            mid="1234", name="Batman", slug="batman", publisher=publisher
+        )
+
+        cls.issue = Issue.objects.create(
+            mid="4321",
+            slug="batman-1",
+            file="/home/b.cbz",
+            mod_ts=mod_time,
+            cover_date=issue_date,
+            number="1",
+            series=series,
+        )
+
+    def test_view_url_accessible_by_name(self):
+        url = reverse("issue:detail", args=(self.issue.slug,))
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, HTML_OK_CODE)
+
+    def test_view_uses_correct_template(self):
+        url = reverse("issue:detail", args=(self.issue.slug,))
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, HTML_OK_CODE)
+        self.assertTemplateUsed(resp, "comics/issue_detail.html")
