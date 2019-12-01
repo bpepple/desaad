@@ -133,6 +133,7 @@ class ComicImporter:
                 comic.delete()
 
     def get_comic_metadata(self, path):
+        meta_data = None
         comic_archive = ComicArchive(path)
         if comic_archive.seemsToBeAComicArchive():
             self.logger.info(f"Reading in {self.read_count} {path}")
@@ -144,9 +145,8 @@ class ComicImporter:
                 meta_data.mod_ts = datetime.utcfromtimestamp(
                     os.path.getmtime(comic_archive.path)
                 )
-                return meta_data
-        else:
-            return None
+
+        return meta_data
 
     @staticmethod
     def get_metron_issue_id(meta_data):
