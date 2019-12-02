@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from comics.comicapi.genericmetadata import GenericMetadata
 from comics.importer.importcomics import ComicImporter
-from comics.models import Creator, Issue, Publisher, Series
+from comics.models import Character, Creator, Issue, Publisher, Series
 
 
 class TestComicImporter(TestCase):
@@ -34,6 +34,7 @@ class TestComicImporter(TestCase):
             series=series,
         )
         Creator.objects.create(mid=1, name="John Byrne", slug="john-byrne")
+        Character.objects.create(mid=5, name="Human Torch", slug="human-torch")
 
     def test_create_issue_slug(self):
         expected = "batman-2016-005"
@@ -63,6 +64,16 @@ class TestComicImporter(TestCase):
     def test_create_creator_slug_with_existing_record(self):
         expected = "john-byrne-1"
         result = self.comic_import.create_creator_slug("John Byrne")
+        self.assertEqual(expected, result)
+
+    def test_create_character_slug(self):
+        expected = "black-bolt"
+        result = self.comic_import.create_character_slug("Black Bolt")
+        self.assertEqual(expected, result)
+
+    def test_create_character_slug_with_existing_record(self):
+        expected = "human-torch-1"
+        result = self.comic_import.create_character_slug("Human Torch")
         self.assertEqual(expected, result)
 
     def test_get_metron_issue_id(self):

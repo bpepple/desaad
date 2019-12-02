@@ -14,12 +14,14 @@ from comics.comicapi.issuestring import IssueString
 from comics.importer.metrontalker import MetronTalker
 from comics.importer.utils import (
     check_for_directories,
+    create_character_image_path,
     create_creator_image_path,
     create_issues_image_path,
     create_publisher_image_path,
 )
 from comics.models import (
     Arc,
+    Character,
     Creator,
     Credits,
     Issue,
@@ -92,6 +94,17 @@ class ComicImporter:
 
         for count in itertools.count(1):
             if not Creator.objects.filter(slug=slug).exists():
+                break
+            slug = f"{orig}-{count}"
+
+        return slug
+
+    @staticmethod
+    def create_character_slug(name):
+        slug = orig = slugify(name)
+
+        for count in itertools.count(1):
+            if not Character.objects.filter(slug=slug).exists():
                 break
             slug = f"{orig}-{count}"
 
@@ -278,6 +291,49 @@ class ComicImporter:
 
         return creator_obj
 
+    def fetch_character_image(self, image):
+        # Path and new file name to save in the database.
+        img_db_path = create_character_image_path(image)
+        # Path to save in the filesystem
+        img_save_path = MEDIA_ROOT + os.sep + img_db_path
+        # Create the filesystem path if it doesn't exist.
+        check_for_directories(img_save_path)
+        # Finally, let's actually fetch the image.
+        self.talker.fetch_image(image, img_save_path)
+
+        return img_db_path
+
+    def get_character_obj(self, character_id):
+        character_obj, create = Character.objects.get_or_create(mid=int(character_id))
+        if create:
+            # Get the creator datea
+            character_data = self.talker.fetch_character_data(character_id)
+
+            character_obj.name = character_data["name"]
+            character_obj.slug = self.create_character_slug(character_data["name"])
+            character_obj.desc = character_data["desc"]
+
+            if character_data["image"] is not None:
+                character_obj.image = self.fetch_character_image(
+                    character_data["image"]
+                )
+
+            if character_data["alias"] is not None:
+                character_obj.alias = character_data["alias"]
+
+            if character_data["creators"] is not None:
+                for creator in character_data["creators"]:
+                    person = self.get_creator_obj(creator["id"])
+                    character_obj.creators.add(person)
+                    self.logger.info(f"Added Creator to {character_obj}")
+
+            # TODO: Add teams to character
+
+            character_obj.save()
+            self.logger.info(f"Added Character: {character_obj}")
+
+        return character_obj
+
     @staticmethod
     def get_role_obj(role):
         role_name = role["name"].title()
@@ -358,6 +414,13 @@ class ComicImporter:
                     arc_obj = self.get_arc_obj(arc["id"])
                     if arc_obj:
                         issue_obj.arcs.add(arc_obj)
+
+            # Add any characters to the issue.
+            for character in issue_data["characters"]:
+                if character:
+                    character_obj = self.get_character_obj(character["id"])
+                    if character_obj:
+                        issue_obj.characters.add(character_obj)
 
             # Add any creator credits to the issue
             for credit in issue_data["credits"]:
