@@ -14,6 +14,8 @@ class IssueListViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cover_date = timezone.now().date()
+        mod_time = timezone.now()
+
         publisher = Publisher.objects.create(name="DC", slug="dc", mid=1)
         series_type = SeriesType.objects.create(name="Ongoing Series", mid=1)
         superman = Series.objects.create(
@@ -33,6 +35,7 @@ class IssueListViewTest(TestCase):
                 number=i_num,
                 slug=f"superman-2018-{i_num}",
                 cover_date=cover_date,
+                mod_ts=mod_time,
             )
 
     def test_view_url_exists_at_desired_location(self):
@@ -68,14 +71,19 @@ class IssueDetailViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         issue_date = timezone.now().date()
+        mod_time = timezone.now()
+
         publisher = Publisher.objects.create(mid=1, name="DC Comics", slug="dc-comics")
+
         series = Series.objects.create(
             mid="1234", name="Batman", slug="batman", publisher=publisher
         )
+
         cls.issue = Issue.objects.create(
             mid="4321",
             slug="batman-1",
             file="/home/b.cbz",
+            mod_ts=mod_time,
             cover_date=issue_date,
             number="1",
             series=series,
