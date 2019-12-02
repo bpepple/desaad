@@ -44,6 +44,18 @@ class TestMetronTalker(TestCase):
             "desc": "Charles Dixon is an American comic book writer",
             "image": "https://static.metron.cloud/media/creator/2018/11/18/chuck-dixon.jpg",
         }
+        self.character = {
+            "id": 1,
+            "name": "Black Bolt",
+            "alias": [],
+            "desc": "Black Bolt (Blackagar Boltagon) is a fictional character appearing in American comic books published by Marvel Comics.",
+            "image": "https://static.metron.cloud/media/character/2018/11/11/black-bolt.jpg",
+            "creators": [
+                {"id": 3, "name": "Jack Kirby"},
+                {"id": 4, "name": "Stan Lee"},
+            ],
+            "teams": [{"id": 179, "name": "Illuminati"}, {"id": 1, "name": "Inhumans"}],
+        }
         self.issue = {
             "id": 2471,
             "publisher": "DC Comics",
@@ -145,3 +157,13 @@ class TestMetronTalker(TestCase):
         self.assertEqual(resp["id"], self.arc["id"])
         self.assertEqual(resp["name"], self.arc["name"])
         self.assertEqual(resp["desc"], self.arc["desc"])
+
+    @patch("comics.importer.metrontalker.MetronTalker.fetch_response")
+    def test_fetch_character_by_id(self, mock_fetch):
+        mock_fetch.return_value = self.character
+        talker = MetronTalker(self.base64string)
+        resp = talker.fetch_character_data("1")
+        self.assertIsNotNone(resp)
+        self.assertEqual(resp["id"], self.character["id"])
+        self.assertEqual(resp["name"], self.character["name"])
+        self.assertEqual(resp["desc"], self.character["desc"])

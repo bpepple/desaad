@@ -72,3 +72,8 @@ class MetronTalker:
         url = self.baseurl + f"/creator/{m_id}/?format=json"
         resp = self.fetch_response(url)
         return resp
+
+    def fetch_character_data(self, m_id):
+        url = self.baseurl + f"/character/{m_id}/?format=json"
+        resp = self.fetch_response(url)
+        return resp
