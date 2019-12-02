@@ -9,7 +9,7 @@ import sorl.thumbnail.fields
 
 class Migration(migrations.Migration):
 
-    replaces = [('comics', '0001_initial'), ('comics', '0002_unaccent_extension'), ('comics', '0003_add_team_character_models')]
+    replaces = []
 
     initial = True
 
