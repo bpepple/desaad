@@ -383,6 +383,7 @@ class ComicImporter:
                     mid=int(issue_data["id"]),
                     number=issue_data["number"],
                     slug=issue_slug,
+                    name=issue_data["name"],
                     cover_date=cover_date,
                     desc=issue_data["desc"],
                     page_count=meta_data.page_count,
