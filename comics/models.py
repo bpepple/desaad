@@ -39,6 +39,52 @@ class Creator(models.Model):
         ordering = ["name"]
 
 
+class Team(models.Model):
+    mid = models.PositiveIntegerField("Metron ID", unique=True)
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=255, unique=True)
+    desc = models.TextField("Description", blank=True)
+    wikipedia = models.CharField("Wikipedia Slug", max_length=255, blank=True)
+    image = ImageField(upload_to="team/%Y/%m/%d/", blank=True)
+    creators = models.ManyToManyField(Creator, blank=True)
+
+    @property
+    def issue_count(self):
+        return self.issue_set.all().count()
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ["name"]
+
+
+class Character(models.Model):
+    mid = models.PositiveIntegerField("Metron ID", unique=True)
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=255, unique=True)
+    desc = models.TextField("Description", blank=True)
+    wikipedia = models.CharField("Wikipedia Slug", max_length=255, blank=True)
+    image = ImageField(upload_to="character/%Y/%m/%d/", blank=True)
+    alias = ArrayField(models.CharField(max_length=100), null=True, blank=True)
+    creators = models.ManyToManyField(Creator, blank=True)
+    teams = models.ManyToManyField(Team, blank=True)
+
+    @property
+    def issue_count(self):
+        return self.issue_set.all().count()
+
+    @property
+    def first_appearance(self):
+        return self.issue_set.order_by("cover_date").all().first
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ["name"]
+
+
 class Publisher(models.Model):
     mid = models.PositiveIntegerField("Metron ID", unique=True)
     name = models.CharField(max_length=255, blank=True)
@@ -75,7 +121,6 @@ class SeriesType(models.Model):
     mid = models.PositiveIntegerField("Metron ID", unique=True)
     name = models.CharField(max_length=255)
     notes = models.TextField(blank=True)
-    modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -140,8 +185,6 @@ class Issue(models.Model):
     )
     leaf = models.PositiveSmallIntegerField(editable=False, default=0, blank=True)
     page_count = models.PositiveSmallIntegerField(editable=False, default=1, blank=True)
-    mod_ts = models.DateTimeField()
-    import_date = models.DateTimeField("Date Imported", auto_now_add=True)
 
     @property
     def percent_read(self):
