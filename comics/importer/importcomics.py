@@ -376,7 +376,6 @@ class ComicImporter:
                 cover_date = datetime.strptime(issue_data["cover_date"], "%Y-%m-%d")
 
             issue_slug = self.create_issue_slug(series_obj.slug, meta_data.issue)
-            # TODO: Add title array to issue
             try:
                 issue_obj = Issue.objects.create(
                     file=meta_data.path,
