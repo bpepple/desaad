@@ -12,7 +12,6 @@ class TestComicImporter(TestCase):
         cls.comic_import = ComicImporter()
 
         cover_date = timezone.now().date()
-        mod_time = timezone.now()
 
         cls.publisher = Publisher.objects.create(
             mid=5, name="DC Comics", slug="dc-comics"
@@ -28,7 +27,6 @@ class TestComicImporter(TestCase):
             mid="4321",
             slug="superman-2016-001",
             file="/home/b.cbz",
-            mod_ts=mod_time,
             cover_date=cover_date,
             number="1",
             series=series,
