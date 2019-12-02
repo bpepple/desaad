@@ -169,10 +169,6 @@ class Migration(migrations.Migration):
             name='import_date',
         ),
         migrations.RemoveField(
-            model_name='issue',
-            name='mod_ts',
-        ),
-        migrations.RemoveField(
             model_name='seriestype',
             name='modified',
         ),
