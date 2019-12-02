@@ -179,6 +179,8 @@ class Issue(models.Model):
     desc = models.TextField("Description", blank=True)
     image = ImageField("Cover", upload_to="issue/%Y/%m/%d/", blank=True)
     creators = models.ManyToManyField(Creator, through="Credits", blank=True)
+    characters = models.ManyToManyField(Character, blank=True)
+    teams = models.ManyToManyField(Team, blank=True)
     file = models.CharField("File Path", max_length=300)
     status = models.PositiveSmallIntegerField(
         "Status", choices=STATUS_CHOICES, default=0, blank=True
