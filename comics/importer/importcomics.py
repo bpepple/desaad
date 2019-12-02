@@ -14,6 +14,7 @@ from comics.comicapi.issuestring import IssueString
 from comics.importer.metrontalker import MetronTalker
 from comics.importer.utils import (
     check_for_directories,
+    create_arc_image_path,
     create_character_image_path,
     create_creator_image_path,
     create_issues_image_path,
@@ -236,16 +237,29 @@ class ComicImporter:
 
         return series_obj
 
+    def fetch_arc_image(self, image):
+        # Path and new file name to save in the database.
+        img_db_path = create_arc_image_path(image)
+        # Path to save in the filesystem
+        img_save_path = MEDIA_ROOT + os.sep + img_db_path
+        # Create the filesystem path if it doesn't exist.
+        check_for_directories(img_save_path)
+        # Finally, let's actually fetch the image.
+        self.talker.fetch_image(image, img_save_path)
+
+        return img_db_path
+
     def get_arc_obj(self, arc_id):
         arc_obj, create = Arc.objects.get_or_create(mid=int(arc_id))
         if create:
             # Get arc detail
             arc_data = self.talker.fetch_arc_data(arc_id)
-
             arc_obj.name = arc_data["name"]
             arc_obj.slug = slugify(arc_data["name"])
             arc_obj.desc = arc_data["desc"]
-            # TODO: Add arc image
+            # If there is a creator image, fetch it.
+            if arc_data["image"] is not None:
+                arc_obj.image = self.fetch_arc_image(arc_data["image"])
             arc_obj.save()
             self.logger.info(f"Added arc: {arc_obj}")
 
