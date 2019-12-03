@@ -24,6 +24,7 @@ from comics.urls import creator as creator_urls
 from comics.urls import issue as issue_urls
 from comics.urls import publisher as publisher_urls
 from comics.urls import series as series_urls
+from comics.urls import team as team_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -31,8 +32,9 @@ urlpatterns = [
     path("character/", include(character_urls)),
     path("creator/", include(creator_urls)),
     path("issue/", include(issue_urls)),
-    path("series/", include(series_urls)),
     path("publisher/", include(publisher_urls)),
+    path("series/", include(series_urls)),
+    path("team/", include(team_urls)),
 ]
 
 if settings.DEBUG:
