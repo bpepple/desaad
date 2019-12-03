@@ -204,7 +204,7 @@
           <div class="content">
             <ul>
               {% for arc in arcs %}
-              <li><a href="">{{ arc.name }}</a></li>
+              <li><a href="{% url 'arc:detail' arc.slug %}">{{ arc.name }}</a></li>
               {% endfor %}
             </ul>
           </div>
