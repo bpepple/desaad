@@ -10,6 +10,10 @@ class Arc(models.Model):
     desc = models.TextField("Description", blank=True)
     image = ImageField(upload_to="arc/%Y/%m/%d/", blank=True)
 
+    @property
+    def issue_count(self):
+        return self.issue_set.all().count()
+
     def __str__(self):
         return self.name
 
