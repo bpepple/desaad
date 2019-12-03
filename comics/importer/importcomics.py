@@ -19,6 +19,7 @@ from comics.importer.utils import (
     create_creator_image_path,
     create_issues_image_path,
     create_publisher_image_path,
+    create_team_image_path,
 )
 from comics.models import (
     Arc,
@@ -30,6 +31,7 @@ from comics.models import (
     Role,
     Series,
     SeriesType,
+    Team,
 )
 from desaad.settings import MEDIA_ROOT, METRON_PASS, METRON_USER
 
@@ -47,8 +49,7 @@ def get_recursive_filelist(pathlist):
 class ComicImporter:
     def __init__(self):
         # Configure Logging
-        logging.getLogger("requests").setLevel(logging.WARNING)
-        self.logger = logging.getLogger("desaad")
+        self.logger = logging.getLogger(__name__)
 
         # TODO: Use SETTINGS variable for this.
         self.directory_path = "/home/bpepple/Documents/Comics"
@@ -106,6 +107,17 @@ class ComicImporter:
 
         for count in itertools.count(1):
             if not Character.objects.filter(slug=slug).exists():
+                break
+            slug = f"{orig}-{count}"
+
+        return slug
+
+    @staticmethod
+    def create_team_slug(name):
+        slug = orig = slugify(name)
+
+        for count in itertools.count(1):
+            if not Team.objects.filter(slug=slug).exists():
                 break
             slug = f"{orig}-{count}"
 
@@ -305,6 +317,41 @@ class ComicImporter:
 
         return creator_obj
 
+    def fetch_team_image(self, image):
+        # Path and new file name to save in the database.
+        img_db_path = create_team_image_path(image)
+        # Path to save in the filesystem
+        img_save_path = MEDIA_ROOT + os.sep + img_db_path
+        # Create the filesystem path if it doesn't exist.
+        check_for_directories(img_save_path)
+        # Finally, let's actually fetch the image.
+        self.talker.fetch_image(image, img_save_path)
+
+        return img_db_path
+
+    def get_team_obj(self, team_id):
+        team_obj, create = Team.objects.get_or_create(mid=int(team_id))
+        if create:
+            team_data = self.talker.fetch_team_data(team_id)
+
+            team_obj.name = team_data["name"]
+            team_obj.slug = self.create_team_slug(team_data["name"])
+            team_obj.desc = team_data["desc"]
+
+            if team_data["image"] is not None:
+                team_obj.image = self.fetch_team_image(team_data["image"])
+
+            if team_data["creators"] is not None:
+                for creator in team_data["creators"]:
+                    person = self.get_creator_obj(creator["id"])
+                    team_obj.creators.add(person)
+                    self.logger.info(f"Added Creator to {team_obj}")
+
+            team_obj.save()
+            self.logger.info(f"Added Team: {team_obj}")
+
+        return team_obj
+
     def fetch_character_image(self, image):
         # Path and new file name to save in the database.
         img_db_path = create_character_image_path(image)
@@ -320,7 +367,6 @@ class ComicImporter:
     def get_character_obj(self, character_id):
         character_obj, create = Character.objects.get_or_create(mid=int(character_id))
         if create:
-            # Get the creator datea
             character_data = self.talker.fetch_character_data(character_id)
 
             character_obj.name = character_data["name"]
@@ -337,11 +383,15 @@ class ComicImporter:
 
             if character_data["creators"] is not None:
                 for creator in character_data["creators"]:
-                    person = self.get_creator_obj(creator["id"])
-                    character_obj.creators.add(person)
+                    creator_obj = self.get_creator_obj(creator["id"])
+                    character_obj.creators.add(creator_obj)
                     self.logger.info(f"Added Creator to {character_obj}")
 
-            # TODO: Add teams to character
+            if character_data["teams"] is not None:
+                for team in character_data["teams"]:
+                    team_obj = self.get_team_obj(team["id"])
+                    character_obj.teams.add(team_obj)
+                    self.logger.info(f"Added Team to {character_obj}")
 
             character_obj.save()
             self.logger.info(f"Added Character: {character_obj}")
@@ -435,6 +485,13 @@ class ComicImporter:
                     character_obj = self.get_character_obj(character["id"])
                     if character_obj:
                         issue_obj.characters.add(character_obj)
+
+            # Add any teams to the issue.
+            for team in issue_data["teams"]:
+                if team:
+                    team_obj = self.get_team_obj(team["id"])
+                    if team_obj:
+                        issue_obj.teams.add(team_obj)
 
             # Add any creator credits to the issue
             for credit in issue_data["credits"]:

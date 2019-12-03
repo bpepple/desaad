@@ -4,6 +4,7 @@ import platform
 import time
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
+import logging
 
 from ratelimit import limits, sleep_and_retry
 
@@ -12,7 +13,9 @@ ONE_MINUTE = 60
 
 class MetronTalker:
     """Python class to communicate with Metron's REST API"""
+
     def __init__(self, auth):
+        self.logger = logging.getLogger(__name__)
         self.baseurl = "https://metron.cloud/api"
         self.auth_str = f"Basic {auth.decode('utf-8')}"
         self.user_agent = f"desaad/version ({platform.system()}; {platform.release()})"
@@ -33,7 +36,7 @@ class MetronTalker:
         except HTTPError as h_error:
             # TODO: Look into handling throttling better, but for now let's use this.
             if h_error.code == 429:
-                print("Exceeded api rate limit. Sleeping for 30 seconds...")
+                self.logger.warning("Exceeded api rate limit. Sleeping for 30 seconds...")
                 time.sleep(30)
                 return self.fetch_response(url)
             raise
@@ -42,11 +45,17 @@ class MetronTalker:
 
         return resp
 
-    @staticmethod
-    def fetch_image(url, file_name):
-        with urlopen(url) as img:
-            with open(file_name, "wb") as m_image:
-                m_image.write(img.read())
+    def fetch_image(self, url, file_name):
+        try:
+            with urlopen(url) as img:
+                with open(file_name, "wb") as m_image:
+                    m_image.write(img.read())
+        except HTTPError as h_error:
+            if h_error.code == 504:
+                self.logger.warning("Gateway Timeout. Sleeping for 60 seconds...")
+                time.sleep(ONE_MINUTE)
+                return self.fetch_image(url, file_name)
+            raise
 
     def fetch_publisher_data(self, m_id):
         url = self.baseurl + f"/publisher/{m_id}/?format=json"
@@ -75,5 +84,10 @@ class MetronTalker:
 
     def fetch_character_data(self, m_id):
         url = self.baseurl + f"/character/{m_id}/?format=json"
+        resp = self.fetch_response(url)
+        return resp
+
+    def fetch_team_data(self, m_id):
+        url = self.baseurl + f"/team/{m_id}/?format=json"
         resp = self.fetch_response(url)
         return resp

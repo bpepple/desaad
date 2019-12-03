@@ -170,7 +170,7 @@ logging.config.dictConfig(
         },
         "loggers": {
             "": {"level": "WARNING", "handlers": ["console"]},
-            "desaad": {
+            "comics": {
                 "level": "INFO",
                 "handlers": ["console"],
                 # required to avoid double logging with root logger
