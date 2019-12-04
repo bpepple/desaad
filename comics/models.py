@@ -191,6 +191,7 @@ class Issue(models.Model):
     )
     leaf = models.PositiveSmallIntegerField(editable=False, default=0, blank=True)
     page_count = models.PositiveSmallIntegerField(editable=False, default=1, blank=True)
+    created_on = models.DateTimeField(auto_now_add=True)
     mod_ts = models.DateTimeField()
 
     @property
