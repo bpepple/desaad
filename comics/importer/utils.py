@@ -1,6 +1,9 @@
+import logging
 import os
 import uuid
 from datetime import datetime
+
+LOGGER = logging.getLogger(__name__)
 
 
 def create_date_path():
@@ -19,7 +22,7 @@ def check_for_directories(path):
     head, _ = os.path.split(path)
     if not os.path.isdir(head):
         os.makedirs(head)
-        print(f"Created directory: {head}")
+        LOGGER.info(f"Created directory: {head}")
 
 
 def new_image_name(path):
