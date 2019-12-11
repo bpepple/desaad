@@ -207,6 +207,7 @@ class ComicImporter:
             pub_obj.slug = slugify(pub_data["name"])
             pub_obj.desc = pub_data["desc"]
             pub_obj.founded = pub_data["founded"]
+            pub_obj.wikipedia = pub_data["wikipedia"]
 
             # If there is a publisher image, fetch it.
             if pub_data["image"] is not None:
@@ -299,6 +300,7 @@ class ComicImporter:
             creator_obj.name = creator_data["name"]
             creator_obj.slug = self.create_creator_slug(creator_data["name"])
             creator_obj.desc = creator_data["desc"]
+            creator_obj.wikipedia = creator_data["wikipedia"]
 
             # If there is a creator image, fetch it.
             if creator_data["image"] is not None:
@@ -337,6 +339,7 @@ class ComicImporter:
             team_obj.name = team_data["name"]
             team_obj.slug = self.create_team_slug(team_data["name"])
             team_obj.desc = team_data["desc"]
+            team_obj.wikipedia = team_data["wikipedia"]
 
             if team_data["image"] is not None:
                 team_obj.image = self.fetch_team_image(team_data["image"])
@@ -372,6 +375,7 @@ class ComicImporter:
             character_obj.name = character_data["name"]
             character_obj.slug = self.create_character_slug(character_data["name"])
             character_obj.desc = character_data["desc"]
+            character_obj.wikipedia = character_data["wikipedia"]
 
             if character_data["image"] is not None:
                 character_obj.image = self.fetch_character_image(
