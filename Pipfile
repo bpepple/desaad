@@ -12,7 +12,7 @@ pytest-cov = "*"
 pytest-django = "*"
 
 [packages]
-django = "*"
+django = "==2.2.*"
 psycopg2 = "*"
 sorl-thumbnail = "*"
 pillow = "*"
@@ -21,6 +21,7 @@ ratelimit = "*"
 python-decouple = "*"
 redis = "*"
 django-simple-bulma = "*"
+darkseid = "*"
 
 [requires]
 python_version = "3.6"
