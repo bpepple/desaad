@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
 
-from comics.comicapi.genericmetadata import GenericMetadata
+from darkseid.genericmetadata import GenericMetadata
 from comics.importer.importcomics import ComicImporter
 from comics.models import Character, Creator, Issue, Publisher, Series
 
