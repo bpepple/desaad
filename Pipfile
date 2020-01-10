@@ -10,6 +10,7 @@ pylint = "*"
 flake8 = "*"
 pytest-cov = "*"
 pytest-django = "*"
+black = "*"
 
 [packages]
 django = "==2.2.*"
@@ -25,3 +26,6 @@ darkseid = "*"
 
 [requires]
 python_version = "3.6"
+
+[pipenv]
+allow_prereleases = true
