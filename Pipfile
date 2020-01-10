@@ -10,9 +10,10 @@ pylint = "*"
 flake8 = "*"
 pytest-cov = "*"
 pytest-django = "*"
+black = "*"
 
 [packages]
-django = "*"
+django = "==2.2.*"
 psycopg2 = "*"
 sorl-thumbnail = "*"
 pillow = "*"
@@ -21,6 +22,10 @@ ratelimit = "*"
 python-decouple = "*"
 redis = "*"
 django-simple-bulma = "*"
+darkseid = "*"
 
 [requires]
 python_version = "3.6"
+
+[pipenv]
+allow_prereleases = true

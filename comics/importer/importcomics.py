@@ -9,8 +9,8 @@ from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.text import slugify
 
-from comics.comicapi.comicarchive import ComicArchive, MetaDataStyle
-from comics.comicapi.issuestring import IssueString
+from darkseid.comicarchive import ComicArchive, MetaDataStyle
+from darkseid.issuestring import IssueString
 from comics.importer.metrontalker import MetronTalker
 from comics.importer.utils import (
     check_for_directories,
@@ -69,7 +69,7 @@ class ComicImporter:
 
     @staticmethod
     def create_issue_slug(series, number):
-        formatted_number = IssueString(number).asString(pad=3)
+        formatted_number = IssueString(number).as_string(pad=3)
         slug = orig = slugify(series + "-" + formatted_number)
 
         for count in itertools.count(1):
@@ -161,11 +161,11 @@ class ComicImporter:
     def get_comic_metadata(self, path):
         meta_data = None
         comic_archive = ComicArchive(path)
-        if comic_archive.seemsToBeAComicArchive():
+        if comic_archive.seems_to_be_a_comic_archive():
             self.logger.info(f"Reading in {self.read_count} {path}")
             self.read_count += 1
-            if comic_archive.hasMetadata(self.style):
-                meta_data = comic_archive.readMetadata(self.style)
+            if comic_archive.has_metadata(self.style):
+                meta_data = comic_archive.read_metadata(self.style)
                 meta_data.path = comic_archive.path
                 meta_data.page_count = comic_archive.page_count
                 meta_data.mod_ts = datetime.utcfromtimestamp(
