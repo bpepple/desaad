@@ -5,12 +5,12 @@ import re
 from base64 import standard_b64encode
 from datetime import datetime
 
+from darkseid.comicarchive import ComicArchive, MetaDataStyle
+from darkseid.issuestring import IssueString
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.text import slugify
 
-from darkseid.comicarchive import ComicArchive, MetaDataStyle
-from darkseid.issuestring import IssueString
 from comics.importer.metrontalker import MetronTalker
 from comics.importer.utils import (
     check_for_directories,
@@ -70,7 +70,7 @@ class ComicImporter:
     @staticmethod
     def create_issue_slug(series, number):
         formatted_number = IssueString(number).as_string(pad=3)
-        slug = orig = slugify(series + "-" + formatted_number)
+        slug = orig = slugify(f"{series}-{formatted_number}")
 
         for count in itertools.count(1):
             if not Issue.objects.filter(slug=slug).exists():
@@ -81,7 +81,7 @@ class ComicImporter:
 
     @staticmethod
     def create_series_slug(series, year):
-        slug = orig = slugify(series + "-" + str(year))
+        slug = orig = slugify(f"{series}-{year}")
 
         for count in itertools.count(1):
             if not Series.objects.filter(slug=slug).exists():
