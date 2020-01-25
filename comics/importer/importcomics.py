@@ -5,7 +5,7 @@ import re
 from base64 import standard_b64encode
 from datetime import datetime
 
-from darkseid.comicarchive import ComicArchive, MetaDataStyle
+from darkseid.comicarchive import ComicArchive
 from darkseid.issuestring import IssueString
 from django.db import IntegrityError
 from django.utils import timezone
@@ -57,9 +57,6 @@ class ComicImporter:
         # Metron creditials
         creditials = f"{METRON_USER}:{METRON_PASS}"
         self.auth = standard_b64encode(creditials.encode("utf-8"))
-
-        # Comic tag style
-        self.style = MetaDataStyle.CIX
 
         # Count of issues imported into the database
         self.read_count = 0
@@ -164,8 +161,8 @@ class ComicImporter:
         if comic_archive.seems_to_be_a_comic_archive():
             self.logger.info(f"Reading in {self.read_count} {path}")
             self.read_count += 1
-            if comic_archive.has_metadata(self.style):
-                meta_data = comic_archive.read_metadata(self.style)
+            if comic_archive.has_metadata():
+                meta_data = comic_archive.read_metadata()
                 meta_data.path = comic_archive.path
                 meta_data.page_count = comic_archive.page_count
                 meta_data.mod_ts = datetime.utcfromtimestamp(
