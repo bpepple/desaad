@@ -416,98 +416,100 @@ class ComicImporter:
         return img_db_path
 
     def add_comic_from_metadata(self, meta_data):
-        if not meta_data.isEmpty:
-            # Retrieve the Metron issue id from the comic file's tagged info
-            mid = self.get_metron_issue_id(meta_data)
-            if not mid:
-                LOGGER.info(
-                    f"No Metron ID for: {meta_data.series} #{meta_data.number}... skipping"
+        # Retrieve the Metron issue id from the comic file's tagged info
+        mid = self.get_metron_issue_id(meta_data)
+        if not mid:
+            LOGGER.info(
+                f"No Metron ID for: {meta_data.series} #{meta_data.number}... skipping"
+            )
+            return False
+
+        # Let's get the issue data
+        issue_data = self.talker.fetch_issue_data(mid)
+        if issue_data is None:
+            return False
+
+        # Now get the series info.
+        series_id = issue_data["series"]["id"]
+        series_obj = self.get_series_obj(series_id)
+
+        # Now let's create the issue
+        current_timezone = timezone.get_current_timezone()
+        t_zone = timezone.make_aware(meta_data.mod_ts, current_timezone)
+
+        if issue_data["cover_date"] is not None:
+            cover_date = datetime.strptime(issue_data["cover_date"], "%Y-%m-%d")
+
+        issue_slug = self.create_issue_slug(series_obj.slug, meta_data.issue)
+        try:
+            issue_obj = Issue.objects.create(
+                file=meta_data.path,
+                mid=int(issue_data["id"]),
+                number=issue_data["number"],
+                slug=issue_slug,
+                name=issue_data["name"],
+                cover_date=cover_date,
+                desc=issue_data["desc"],
+                page_count=meta_data.page_count,
+                mod_ts=t_zone,
+                series=series_obj,
+            )
+        except IntegrityError as i_error:
+            LOGGER.error(f"Attempting to create issue in database - {i_error}")
+            LOGGER.info(f"Skipping: {meta_data.path}")
+            return False
+
+        LOGGER.info(f"Created {issue_obj}")
+
+        # Fetch the issue image
+        if issue_data["image"] is not None:
+            issue_obj.image = self.fetch_issue_image(issue_data["image"])
+            issue_obj.save()
+
+        # If there is a store date, let's add it to the issue.
+        if issue_data["store_date"] is not None:
+            issue_obj.store_date = datetime.strptime(
+                issue_data["store_date"], "%Y-%m-%d"
+            )
+            issue_obj.save()
+
+        # Add any arcs to the issue.
+        for arc in issue_data["arcs"]:
+            if arc:
+                arc_obj = self.get_arc_obj(arc["id"])
+                if arc_obj:
+                    issue_obj.arcs.add(arc_obj)
+
+        # Add any characters to the issue.
+        for character in issue_data["characters"]:
+            if character:
+                character_obj = self.get_character_obj(character["id"])
+                if character_obj:
+                    issue_obj.characters.add(character_obj)
+
+        # Add any teams to the issue.
+        for team in issue_data["teams"]:
+            if team:
+                team_obj = self.get_team_obj(team["id"])
+                if team_obj:
+                    issue_obj.teams.add(team_obj)
+
+        # Add any creator credits to the issue
+        for credit in issue_data["credits"]:
+            if credit:
+                creator_id = credit["id"]
+                creator_obj = self.get_creator_obj(creator_id)
+                credit_obj, _ = Credits.objects.get_or_create(
+                    issue=issue_obj, creator=creator_obj
                 )
+                roles = credit["role"]
+                for role in roles:
+                    role_obj = self.get_role_obj(role)
+                    credit_obj.role.add(role_obj)
 
-            # Let's get the issue data
-            issue_data = self.talker.fetch_issue_data(mid)
-            if issue_data is None:
-                return False
+                LOGGER.info(f"Added credit for {creator_obj} to {issue_obj}")
 
-            # Now get the series info.
-            series_id = issue_data["series"]["id"]
-            series_obj = self.get_series_obj(series_id)
-
-            # Now let's create the issue
-            current_timezone = timezone.get_current_timezone()
-            t_zone = timezone.make_aware(meta_data.mod_ts, current_timezone)
-
-            if issue_data["cover_date"] is not None:
-                cover_date = datetime.strptime(issue_data["cover_date"], "%Y-%m-%d")
-
-            issue_slug = self.create_issue_slug(series_obj.slug, meta_data.issue)
-            try:
-                issue_obj = Issue.objects.create(
-                    file=meta_data.path,
-                    mid=int(issue_data["id"]),
-                    number=issue_data["number"],
-                    slug=issue_slug,
-                    name=issue_data["name"],
-                    cover_date=cover_date,
-                    desc=issue_data["desc"],
-                    page_count=meta_data.page_count,
-                    mod_ts=t_zone,
-                    series=series_obj,
-                )
-            except IntegrityError as i_error:
-                LOGGER.error(f"Attempting to create issue in database - {i_error}")
-                LOGGER.info(f"Skipping: {meta_data.path}")
-                return False
-
-            LOGGER.info(f"Created {issue_obj}")
-
-            # Fetch the issue image
-            if issue_data["image"] is not None:
-                issue_obj.image = self.fetch_issue_image(issue_data["image"])
-                issue_obj.save()
-
-            # If there is a store date, let's add it to the issue.
-            if issue_data["store_date"] is not None:
-                issue_obj.store_date = datetime.strptime(
-                    issue_data["store_date"], "%Y-%m-%d"
-                )
-                issue_obj.save()
-
-            # Add any arcs to the issue.
-            for arc in issue_data["arcs"]:
-                if arc:
-                    arc_obj = self.get_arc_obj(arc["id"])
-                    if arc_obj:
-                        issue_obj.arcs.add(arc_obj)
-
-            # Add any characters to the issue.
-            for character in issue_data["characters"]:
-                if character:
-                    character_obj = self.get_character_obj(character["id"])
-                    if character_obj:
-                        issue_obj.characters.add(character_obj)
-
-            # Add any teams to the issue.
-            for team in issue_data["teams"]:
-                if team:
-                    team_obj = self.get_team_obj(team["id"])
-                    if team_obj:
-                        issue_obj.teams.add(team_obj)
-
-            # Add any creator credits to the issue
-            for credit in issue_data["credits"]:
-                if credit:
-                    creator_id = credit["id"]
-                    creator_obj = self.get_creator_obj(creator_id)
-                    credit_obj, _ = Credits.objects.get_or_create(
-                        issue=issue_obj, creator=creator_obj
-                    )
-                    roles = credit["role"]
-                    for role in roles:
-                        role_obj = self.get_role_obj(role)
-                        credit_obj.role.add(role_obj)
-
-                    LOGGER.info(f"Added credit for {creator_obj} to {issue_obj}")
+        return True
 
     def commit_metadata_list(self, md_list):
         self.talker = MetronTalker(self.auth)
