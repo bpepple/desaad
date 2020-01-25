@@ -35,6 +35,8 @@ from comics.models import (
 )
 from desaad.settings import MEDIA_ROOT, METRON_PASS, METRON_USER
 
+LOGGER = logging.getLogger(__name__)
+
 
 def get_recursive_filelist(pathlist):
     # Get a recursive list of all files under all path items in the list.
@@ -48,9 +50,6 @@ def get_recursive_filelist(pathlist):
 
 class ComicImporter:
     def __init__(self):
-        # Configure Logging
-        self.logger = logging.getLogger(__name__)
-
         # TODO: Use SETTINGS variable for this.
         self.directory_path = "/home/bpepple/Documents/Comics"
 
@@ -120,7 +119,8 @@ class ComicImporter:
 
         return slug
 
-    def check_if_removed_or_modified(self, comic, pathlist):
+    @staticmethod
+    def check_if_removed_or_modified(comic, pathlist):
         remove = False
 
         def in_folder_list(filepath, pathlist):
@@ -131,10 +131,10 @@ class ComicImporter:
 
         existing = os.path.exists(comic.file)
         if not existing:
-            self.logger.info(f"Removing missing {comic.file}")
+            LOGGER.info(f"Removing missing {comic.file}")
             remove = True
         elif not in_folder_list(comic.file, pathlist):
-            self.logger.info(f"Removing unwanted {comic.file}")
+            LOGGER.info(f"Removing unwanted {comic.file}")
             remove = True
         else:
             current_timezone = timezone.get_current_timezone()
@@ -143,7 +143,7 @@ class ComicImporter:
             prev = comic.mod_ts
 
             if curr != prev:
-                self.logger.info(f"Removing modified {comic.file}")
+                LOGGER.info(f"Removing modified {comic.file}")
                 remove = True
 
         if remove:
@@ -151,7 +151,7 @@ class ComicImporter:
             count = series.issue_count
             if count == 1:
                 series.delete()
-                self.logger.info(f"Removing series: {series}")
+                LOGGER.info(f"Removing series: {series}")
             else:
                 comic.delete()
 
@@ -159,7 +159,7 @@ class ComicImporter:
         meta_data = None
         comic_archive = ComicArchive(path)
         if comic_archive.seems_to_be_a_comic_archive():
-            self.logger.info(f"Reading in {self.read_count} {path}")
+            LOGGER.info(f"Reading in {self.read_count} {path}")
             self.read_count += 1
             if comic_archive.has_metadata():
                 meta_data = comic_archive.read_metadata()
@@ -211,7 +211,7 @@ class ComicImporter:
                 pub_obj.image = self.fetch_publisher_image(pub_data["image"])
 
             pub_obj.save()
-            self.logger.info(f"Added publisher: {pub_obj}")
+            LOGGER.info(f"Added publisher: {pub_obj}")
 
         return pub_obj
 
@@ -243,7 +243,7 @@ class ComicImporter:
             series_obj.series_type = series_type_obj
             series_obj.publisher = pub_obj
             series_obj.save()
-            self.logger.info(f"Added series: {series_obj}")
+            LOGGER.info(f"Added series: {series_obj}")
 
         return series_obj
 
@@ -271,7 +271,7 @@ class ComicImporter:
             if arc_data["image"] is not None:
                 arc_obj.image = self.fetch_arc_image(arc_data["image"])
             arc_obj.save()
-            self.logger.info(f"Added arc: {arc_obj}")
+            LOGGER.info(f"Added arc: {arc_obj}")
 
         return arc_obj
 
@@ -312,7 +312,7 @@ class ComicImporter:
                 creator_obj.death = datetime.strptime(creator_data["death"], "%Y-%m-%d")
 
             creator_obj.save()
-            self.logger.info(f"Added Creator: {creator_obj}")
+            LOGGER.info(f"Added Creator: {creator_obj}")
 
         return creator_obj
 
@@ -345,10 +345,10 @@ class ComicImporter:
                 for creator in team_data["creators"]:
                     person = self.get_creator_obj(creator["id"])
                     team_obj.creators.add(person)
-                    self.logger.info(f"Added Creator to {team_obj}")
+                    LOGGER.info(f"Added Creator to {team_obj}")
 
             team_obj.save()
-            self.logger.info(f"Added Team: {team_obj}")
+            LOGGER.info(f"Added Team: {team_obj}")
 
         return team_obj
 
@@ -386,16 +386,16 @@ class ComicImporter:
                 for creator in character_data["creators"]:
                     creator_obj = self.get_creator_obj(creator["id"])
                     character_obj.creators.add(creator_obj)
-                    self.logger.info(f"Added Creator to {character_obj}")
+                    LOGGER.info(f"Added Creator to {character_obj}")
 
             if character_data["teams"] is not None:
                 for team in character_data["teams"]:
                     team_obj = self.get_team_obj(team["id"])
                     character_obj.teams.add(team_obj)
-                    self.logger.info(f"Added Team to {character_obj}")
+                    LOGGER.info(f"Added Team to {character_obj}")
 
             character_obj.save()
-            self.logger.info(f"Added Character: {character_obj}")
+            LOGGER.info(f"Added Character: {character_obj}")
 
         return character_obj
 
@@ -420,7 +420,7 @@ class ComicImporter:
             # Retrieve the Metron issue id from the comic file's tagged info
             mid = self.get_metron_issue_id(meta_data)
             if not mid:
-                self.logger.info(
+                LOGGER.info(
                     f"No Metron ID for: {meta_data.series} #{meta_data.number}... skipping"
                 )
 
@@ -455,11 +455,11 @@ class ComicImporter:
                     series=series_obj,
                 )
             except IntegrityError as i_error:
-                self.logger.error(f"Attempting to create issue in database - {i_error}")
-                self.logger.info(f"Skipping: {meta_data.path}")
+                LOGGER.error(f"Attempting to create issue in database - {i_error}")
+                LOGGER.info(f"Skipping: {meta_data.path}")
                 return False
 
-            self.logger.info(f"Created {issue_obj}")
+            LOGGER.info(f"Created {issue_obj}")
 
             # Fetch the issue image
             if issue_data["image"] is not None:
@@ -507,7 +507,7 @@ class ComicImporter:
                         role_obj = self.get_role_obj(role)
                         credit_obj.role.add(role_obj)
 
-                    self.logger.info(f"Added credit for {creator_obj} to {issue_obj}")
+                    LOGGER.info(f"Added credit for {creator_obj} to {issue_obj}")
 
     def commit_metadata_list(self, md_list):
         self.talker = MetronTalker(self.auth)
@@ -558,4 +558,4 @@ class ComicImporter:
         if len(md_list) > 0:
             self.commit_metadata_list(md_list)
 
-        self.logger.info("Finished importing..")
+        LOGGER.info("Finished importing..")
