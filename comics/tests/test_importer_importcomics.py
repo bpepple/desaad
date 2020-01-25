@@ -1,9 +1,9 @@
+from darkseid.genericmetadata import GenericMetadata
 from django.test import TestCase
 from django.utils import timezone
 
-from darkseid.genericmetadata import GenericMetadata
 from comics.importer.importcomics import ComicImporter
-from comics.models import Character, Creator, Issue, Publisher, Series
+from comics.models import Character, Creator, Issue, Publisher, Series, Team
 
 
 class TestComicImporter(TestCase):
@@ -35,6 +35,17 @@ class TestComicImporter(TestCase):
         )
         Creator.objects.create(mid=1, name="John Byrne", slug="john-byrne")
         Character.objects.create(mid=5, name="Human Torch", slug="human-torch")
+        Team.objects.create(mid=2, name="Teen Titans", slug="teen-titans")
+
+    def test_create_team_slug(self):
+        expected = "avengers"
+        result = self.comic_import.create_team_slug("Avengers")
+        self.assertEqual(expected, result)
+
+    def test_create_team_slug_with_existing_record(self):
+        expected = "teen-titans-1"
+        result = self.comic_import.create_team_slug("Teen Titans")
+        self.assertEqual(expected, result)
 
     def test_create_issue_slug(self):
         expected = "batman-2016-005"
