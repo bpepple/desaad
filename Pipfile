@@ -11,6 +11,7 @@ flake8 = "*"
 pytest-cov = "*"
 pytest-django = "*"
 black = "*"
+pytest-xdist = "*"
 
 [packages]
 django = "*"
