@@ -41,9 +41,7 @@ class MetronTalker:
                 return self.fetch_response(url)
             raise
 
-        resp = json.loads(content.read().decode("utf-8"))
-
-        return resp
+        return json.loads(content.read().decode("utf-8"))
 
     def fetch_image(self, url, file_name):
         try:
@@ -59,35 +57,28 @@ class MetronTalker:
 
     def fetch_publisher_data(self, m_id):
         url = self.baseurl + f"/publisher/{m_id}/?format=json"
-        resp = self.fetch_response(url)
-        return resp
+        return self.fetch_response(url)
 
     def fetch_series_data(self, m_id):
         url = self.baseurl + f"/series/{m_id}/?format=json"
-        resp = self.fetch_response(url)
-        return resp
+        return self.fetch_response(url)
 
     def fetch_arc_data(self, m_id):
         url = self.baseurl + f"/arc/{m_id}/?format=json"
-        resp = self.fetch_response(url)
-        return resp
+        return self.fetch_response(url)
 
     def fetch_issue_data(self, m_id):
         url = self.baseurl + f"/issue/{m_id}/?format=json"
-        resp = self.fetch_response(url)
-        return resp
+        return self.fetch_response(url)
 
     def fetch_creator_data(self, m_id):
         url = self.baseurl + f"/creator/{m_id}/?format=json"
-        resp = self.fetch_response(url)
-        return resp
+        return self.fetch_response(url)
 
     def fetch_character_data(self, m_id):
         url = self.baseurl + f"/character/{m_id}/?format=json"
-        resp = self.fetch_response(url)
-        return resp
+        return self.fetch_response(url)
 
     def fetch_team_data(self, m_id):
         url = self.baseurl + f"/team/{m_id}/?format=json"
-        resp = self.fetch_response(url)
-        return resp
+        return self.fetch_response(url)
