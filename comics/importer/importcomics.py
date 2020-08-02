@@ -124,10 +124,7 @@ class ComicImporter:
         remove = False
 
         def in_folder_list(filepath, pathlist):
-            for f_file in pathlist:
-                if f_file in filepath:
-                    return True
-            return False
+            return any(f_file in filepath for f_file in pathlist)
 
         existing = os.path.exists(comic.file)
         if not existing:
@@ -553,11 +550,10 @@ class ComicImporter:
             if meta_data is not None:
                 md_list.append(meta_data)
 
-            if self.read_count % 100 == 0 and self.read_count != 0:
-                if len(md_list) > 0:
-                    self.commit_metadata_list(md_list)
+            if self.read_count % 100 == 0 and self.read_count != 0 and md_list:
+                self.commit_metadata_list(md_list)
 
-        if len(md_list) > 0:
+        if md_list:
             self.commit_metadata_list(md_list)
 
         LOGGER.info("Finished importing..")

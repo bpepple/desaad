@@ -11,11 +11,15 @@ def create_date_path():
     month = datetime.today().month
     day = datetime.today().day
 
-    date = (
-        os.sep + f"{year:04}" + os.sep + f"{month:02}" + os.sep + f"{day:02}" + os.sep
+    return (
+        os.sep
+        + f"{year:04}"
+        + os.sep
+        + f"{month:02}"
+        + os.sep
+        + f"{day:02}"
+        + os.sep
     )
-
-    return date
 
 
 def check_for_directories(path):
