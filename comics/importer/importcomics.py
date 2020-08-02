@@ -51,7 +51,7 @@ def get_recursive_filelist(pathlist):
 class ComicImporter:
     def __init__(self):
         # TODO: Use SETTINGS variable for this.
-        self.directory_path = "/home/bpepple/Documents/Comics"
+        self.directory_path = "/home/bpepple/Storage/Test_Comics"
 
         # Metron creditials
         creditials = f"{METRON_USER}:{METRON_PASS}"
